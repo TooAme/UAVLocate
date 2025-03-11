@@ -60,14 +60,14 @@ Main page styles
 ========================================================================== */
 
 .hipster.img-fluid {
-  display: inline-block;
-  width: 527px;
-  height: 347px;
+  //display: inline-block;
+  width: 263px;
+  height: 173px;
   background: url('/content/images/UAV.svg') no-repeat center top;
   background-size: contain;
   position: absolute;
   top: 80px;
-  left: 490px;
+  left: 550px;
 }
 
 /* wait autoprefixer update to allow simple generation of high pixel density media query */
@@ -82,6 +82,30 @@ Main page styles
     background-size: contain;
   }
 }
+
+// .hipster.img-fluid2 {
+//   //display: inline-block;
+//   width: 527px;
+//   height: 527px;
+//   background: url('/content/images/flat.svg') no-repeat center top;
+//   background-size: contain;
+//   position: absolute;
+//   top: 480px;
+//   left: 490px;
+// }
+
+// /* wait autoprefixer update to allow simple generation of high pixel density media query */
+// @media only screen and (-webkit-min-device-pixel-ratio: 2),
+//   only screen and (min--moz-device-pixel-ratio: 2),
+//   only screen and (-o-min-device-pixel-ratio: 2/1),
+//   only screen and (min-device-pixel-ratio: 2),
+//   only screen and (min-resolution: 192dpi),
+//   only screen and (min-resolution: 2dppx) {
+//   .hipster {
+//     background: url('/content/images/flat.svg') no-repeat center top;
+//     background-size: contain;
+//   }
+// }
 
 /* ==========================================================================
 Generic styles

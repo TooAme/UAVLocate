@@ -2,13 +2,16 @@
   <div class="home row">
     <div class="col-md-3"></div>
     <span class="hipster img-fluid rounded"></span>
+    <span class="img2"></span>
+    <span class="img3"></span>
+    <span class="img4"></span>
 
     <div class="col-md-20">
       <div class="msgblock">
         <h1 class="msg" v-text="'无人机相对降落点X轴距:  5.3CM'"></h1>
         <h1 class="msg" v-text="'无人机相对降落点Y轴距:  46.0CM'"></h1>
-        <h1 class="msg" v-text="'无人机相对降落点Z轴距:  8.4CM'"></h1>
-        <h1 class="msg" v-text="'当前风向:  北偏西32度   风速:  13km/h'"></h1>
+        <h1 class="msg" v-text="'无人机相对降落点Z轴距:  -8.4CM'"></h1>
+        <h1 class="msg" v-text="'当前风向:  北偏西32度   风速:  3km/h'"></h1>
       </div>
     </div>
     <!--      <p class="lead" v-text="t$('home.subtitle')"></p>-->
@@ -77,22 +80,54 @@
   position: absolute;
   top: 90px;
   left: 25px;
+  background: border-box rgb(46, 46, 46);
+  border-radius: 5px;
 }
 .msg {
   font-size: 1.65em;
   font-family: Arial, sans-serif;
   font-weight: bolder;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.493);
-  border: 0.7mm rgba(255, 255, 255, 0.808);
-  border-style: outset;
+  color: rgba(255, 255, 255, 0.915);
+  /* border: 0.9mm rgba(255, 255, 255, 0.808);
+  border-style: outset; */
 
   /* outline: 0.5rem solid khaki; */
   /* box-shadow: 0 0 0 2rem skyblue; */
-  border-radius: 2px;
+  /* border-radius: 5px; */
   /* font: bold 1rem sans-serif; */
-  margin: 1rem;
-  padding: 0.3rem;
+  margin: 25px 15px 25px 10px;
+  padding: 0.6rem;
   /* outline-offset: 5rem; */
+}
+.img2 {
+  display: inline-block;
+  width: 263px;
+  height: 263px;
+  background: url('/content/images/flat.svg') no-repeat center top;
+  background-size: contain;
+  position: absolute;
+  top: 240px;
+  left: 550px;
+}
+.img3 {
+  display: inline-block;
+  width: 313px;
+  height: 313px;
+  background: url('/content/images/target.svg') no-repeat center top;
+  background-size: contain;
+  position: absolute;
+  top: 85px;
+  left: 930px;
+}
+.img4 {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  background: url('/content/images/redpoint.png') no-repeat center top;
+  background-size: contain;
+  position: absolute;
+  top: 310px;
+  left: 1110px;
 }
 </style>
