@@ -83,7 +83,7 @@
       "id": "ID"
     },
     "ribbon": {
-      "dev": "开发环境"
+      "dev": ""
     },
     "item-count": "显示第 { first } - { second } 条，共 { total } 条"
   },

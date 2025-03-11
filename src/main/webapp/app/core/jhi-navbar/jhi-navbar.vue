@@ -2,7 +2,7 @@
   <b-navbar data-cy="navbar" toggleable="md" type="dark" class="bg-dark">
     <b-navbar-brand class="logo" b-link to="/">
       <span class="logo-img"></span>
-      <span v-text="无人机降落点监测" class="navbar-title"></span> <span class="navbar-version">BY_Chenhy</span>
+      <span class="navbar-title">无人机降落点监测系统</span> <span class="navbar-version">BY_Chenhy</span>
     </b-navbar-brand>
     <b-navbar-toggle
       right
