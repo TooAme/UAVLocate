@@ -65,6 +65,9 @@ Main page styles
   height: 347px;
   background: url('/content/images/UAV.svg') no-repeat center top;
   background-size: contain;
+  position: absolute;
+  top: 80px;
+  left: 490px;
 }
 
 /* wait autoprefixer update to allow simple generation of high pixel density media query */

@@ -1,10 +1,16 @@
 <template>
   <div class="home row">
-    <div class="col-md-3">
-      <span class="hipster img-fluid rounded"></span>
+    <div class="col-md-3"></div>
+    <span class="hipster img-fluid rounded"></span>
+
+    <div class="col-md-20">
+      <div class="msgblock">
+        <h1 class="msg" v-text="'无人机相对降落点X轴距:  5.3CM'"></h1>
+        <h1 class="msg" v-text="'无人机相对降落点Y轴距:  46.0CM'"></h1>
+        <h1 class="msg" v-text="'无人机相对降落点Z轴距:  8.4CM'"></h1>
+        <h1 class="msg" v-text="'当前风向:  北偏西32度   风速:  13km/h'"></h1>
+      </div>
     </div>
-    <!--    <div class="col-md-9">-->
-    <!--      <h1 class="display-4" v-text="t$('home.title')"></h1>-->
     <!--      <p class="lead" v-text="t$('home.subtitle')"></p>-->
 
     <!--      <div>-->
@@ -65,3 +71,28 @@
 </template>
 
 <script lang="ts" src="./home.component.ts"></script>
+
+<style scoped>
+.msgblock {
+  position: absolute;
+  top: 90px;
+  left: 25px;
+}
+.msg {
+  font-size: 1.65em;
+  font-family: Arial, sans-serif;
+  font-weight: bolder;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.493);
+  border: 0.7mm rgba(255, 255, 255, 0.808);
+  border-style: outset;
+
+  /* outline: 0.5rem solid khaki; */
+  /* box-shadow: 0 0 0 2rem skyblue; */
+  border-radius: 2px;
+  /* font: bold 1rem sans-serif; */
+  margin: 1rem;
+  padding: 0.3rem;
+  /* outline-offset: 5rem; */
+}
+</style>
