@@ -31,13 +31,6 @@ public class UavLocateApp {
         this.env = env;
     }
 
-    /**
-     * Initializes UAVLocate.
-     * <p>
-     * Spring profiles can be configured with a program argument --spring.profiles.active=your-active-profile
-     * <p>
-     * You can find more information on how profiles work with JHipster on <a href="https://www.jhipster.tech/profiles/">https://www.jhipster.tech/profiles/</a>.
-     */
     @PostConstruct
     public void initApplication() {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
@@ -59,11 +52,6 @@ public class UavLocateApp {
         }
     }
 
-    /**
-     * Main method, used to run the application.
-     *
-     * @param args the command line arguments.
-     */
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(UavLocateApp.class);
         DefaultProfileUtil.addDefaultProfile(app);
@@ -87,21 +75,11 @@ public class UavLocateApp {
         LOG.info(
             CRLFLogConverter.CRLF_SAFE_MARKER,
             """
-
-            ----------------------------------------------------------
-            \tApplication '{}' is running! Access URLs:
-            \tLocal: \t\t{}://localhost:{}{}
-            \tExternal: \t{}://{}:{}{}
-            \tProfile(s): \t{}
-            ----------------------------------------------------------""",
-            applicationName,
-            protocol,
+            \t--------------------------------------
+            \t无人机降落检测前端已在 {} 端口启动\t
+            --------------------------------------
+            """,
             serverPort,
-            contextPath,
-            protocol,
-            hostAddress,
-            serverPort,
-            contextPath,
             env.getActiveProfiles().length == 0 ? env.getDefaultProfiles() : env.getActiveProfiles()
         );
     }
