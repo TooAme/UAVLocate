@@ -8,9 +8,9 @@
 
     <div class="col-md-20">
       <div class="msgblock">
-        <h1 class="msg" v-text="'无人机相对降落点X轴距:  5.3CM'"></h1>
-        <h1 class="msg" v-text="'无人机相对降落点Y轴距:  46.0CM'"></h1>
-        <h1 class="msg" v-text="'无人机相对降落点Z轴距:  -8.4CM'"></h1>
+        <h1 class="msg" v-text="'无人机降落点X轴偏移:  5.3CM'"></h1>
+        <h1 class="msg" v-text="'无人机降落点Y轴偏移:  -8.4CM'"></h1>
+        <h1 class="msg" v-text="'无人机相对降落点(Z轴)高度:  46CM'"></h1>
         <h1 class="msg" v-text="'当前风向:  北偏西32度   风速:  3km/h'"></h1>
       </div>
     </div>

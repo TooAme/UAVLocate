@@ -1,4 +1,4 @@
-#!/bin/sh
+#UAVL
 
 basedir=$(dirname "$0")
 
