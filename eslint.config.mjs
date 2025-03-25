@@ -1,4 +1,3 @@
-//UAVL
 import globals from 'globals';
 import prettier from 'eslint-plugin-prettier/recommended';
 import tseslint from 'typescript-eslint';

@@ -1,4 +1,3 @@
-#UAVL
 
 basedir=$(dirname "$0")
 

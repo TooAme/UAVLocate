@@ -1,4 +1,3 @@
-//UAVL
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "include": ["src/main/webapp//**/*", "src/main/webapp/app/**/*.vue"],
