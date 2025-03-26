@@ -1,0 +1,29 @@
+{
+  "uavLocateApp": {
+    "statics": {
+      "home": {
+        "title": "降落点监测数据",
+        "refreshListLabel": "刷新",
+        "createLabel": "创建新数据",
+        "createOrEditLabel": "创建或编辑数据",
+        "notFound": "没有找到数据"
+      },
+      "created": "数据 { param } 创建成功",
+      "updated": "数据 { param } 更新成功",
+      "deleted": "数据 { param } 删除成功",
+      "delete": {
+        "question": "你确定要删除数据 { id } 吗？"
+      },
+      "detail": {
+        "title": "降落点监测数据"
+      },
+      "id": "序号",
+      "time": "时间",
+      "posX": "X轴偏移",
+      "posY": "Y轴偏移",
+      "posZ": "Z轴距离",
+      "windSpeed": "风速",
+      "windDirection": "风向"
+    }
+  }
+}

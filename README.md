@@ -2,13 +2,13 @@
 
 ![20250313134007](images/20250313134007.png)
 
-# 2025.3
+# 2025.3 I
 
 ## :pushpin:**位置算法**
 
 **（python获取无人机XYZ坐标并算法计算出偏移再传输给springboot,通过service层修改数据库）**
 
-**生成实体（entity）：数据-附带Service类**
+**生成实体（entity）：数据-附带Service类**​​
 
 <img src="images/202531.png" alt="20250313134007" style="zoom:50%;" />
 
@@ -44,7 +44,9 @@
 
 **首先就这样，也不知道风向能不能通过风速计获取度数。**
 
-### **Python**
+### **Python** :link:
+
+**可以直接在Python中实现算法，也可以传入Springboot后。**
 
 ```python
 import requests
@@ -112,7 +114,7 @@ response = requests.post(url, json=data)
 print(f"后端响应: {response.text}")
 ```
 
-### **SpringBoot**
+### **SpringBoot** :link:
 
 ```java
 @RestController
@@ -124,9 +126,9 @@ public class DronePositionResource {
 
   @PostMapping("/position")
   public ResponseEntity<String> updateDronePosition(@RequestBody DronePosition position) {
-    // 保存无人机位置到数据库
+    // 保存数据到数据库
     dronePositionRepository.save(position);
-    return ResponseEntity.ok("位置更新成功");
+    return ResponseEntity.ok("更新数据成功");
   }
 }
 
@@ -134,4 +136,133 @@ public class DronePositionResource {
 
 ## **:question: Z坐标获取**
 
-**资金充足的情况下想要使用的是Inter的深度相机，那资金不充足怎么办呢**
+**查阅了一些网页，要获取物体三维坐标的方法有很多，但是双目，三目摄像头获取到的坐标都不够准确。**
+
+**单目+传感器其实是最佳实现方法，不过数据传输速度过慢也是问题，这时我就看到了深度相机，可以使用ai模型**。
+
+**资金充足的情况下想要使用的是Inter的D435i深度相机，那资金不充足怎么办呢**。
+
+# 2025.3 II
+
+## :ballot_box_with_check:项目重启
+
+**做完公司项目之后回来看发现vite报错。**​​
+
+**<img src="images/202534.png" alt="20250313134007" style="zoom:108%;" />**
+
+**vite是因为nodejs版本被我回退了，用nvm切换到新版本之后把package.json和node_moudles删除后重新安装依赖就没问题了。**
+
+**然后在导入JDL实体的时候jhipster挂了，**
+
+**jhipster为什么会失踪，原来是我重装node的时候把所有的包都清理了。**​​
+
+<img src="images/202533.png" alt="20250313134007" style="zoom:90%;" />
+
+**成功导入JDL实体。**​​
+
+<img src="images/202535.png" alt="20250313134007" style="zoom:95%;" />
+
+**启动Springboot，报错端口被占用。**​​
+
+<img src="images/202536.png" alt="20250313134007" style="zoom: 67%;" />
+
+**找到被占用的端口，终止进程。**
+
+<img src="images/202537.png" alt="20250313134007" style="zoom: 67%;" />
+
+**Springboot启动成功​ :v:**​
+
+<img src="images/202538.png" alt="20250313134007" style="zoom: 67%;" />
+
+**在Springboot配置文件application-dev.yml中配置mySql数据库，关闭liquibase伪数据生成。**:paperclip:
+
+<img src="images/202539.png" alt="20250313134007" style="zoom: 67%;" />
+
+**数据界面完成，后面会把数据设为只读。**
+
+**预计实现的内容：（2选1）**
+
+:o: **方案一：每隔几秒更新一条新的数据，并将数据按倒序排列，新数据会显示在最上方。**
+
+​ :speech_balloon: **问题：每隔几秒的时间间隔需要固定可能在某些情况下无法加载出完整数据。**
+
+:o: **方案二：每有数据刷新时更新一条新的数据，并将数据按倒序排列，新数据会显示在最上方。**
+
+​ :speech_balloon: **问题：每有数据刷新就更新可能会时快时慢地刷出数据，不便于测试和查阅。**
+
+**暂且选择第一种方案，先把刷新时间设的久一些，后续再调整。**​​
+
+<img src="images/2025310.png" alt="20250313134007" style="zoom: 67%;" />
+
+**在i18n配置中文：**
+
+```json
+{
+  "uavLocateApp": {
+    "statics": {
+      "home": {
+        "title": "降落点监测数据",
+        "refreshListLabel": "刷新",
+        "createLabel": "创建新数据",
+        "createOrEditLabel": "创建或编辑数据",
+        "notFound": "没有找到数据"
+      },
+      "created": "数据 { param } 创建成功",
+      "updated": "数据 { param } 更新成功",
+      "deleted": "数据 { param } 删除成功",
+      "delete": {
+        "question": "你确定要删除数据 { id } 吗？"
+      },
+      "detail": {
+        "title": "降落点监测数据"
+      },
+      "id": "序号",
+      "time": "时间",
+      "posX": "X轴偏移",
+      "posY": "Y轴偏移",
+      "posZ": "Z轴距离",
+      "windSpeed": "风速",
+      "windDirection": "风向"
+    }
+  }
+}
+```
+
+**效果：**
+
+<img src="images/2025312.png" alt="20250313134007" style="zoom: 67%;" />
+
+### **SpringBoot** :link:
+
+**用Pageable实现倒序排列数据：**
+
+```java
+//Service类
+@Transactional(readOnly = true)
+public Optional<Statics> findOne(Long id) {
+  LOG.debug("Request to get Statics : {}", id);
+  return staticsRepository.findById(id);
+}
+
+```
+
+**Resource类调用并用getContent()传出List：**
+
+```java
+@GetMapping("")
+public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false, defaultValue = "id,desc") String sort) {
+  LOG.debug("REST request to get all Statics");
+  Pageable pageable = PageRequest.of(0, 20);
+  if (sort != null && !sort.isEmpty()) {
+    String[] sortParams = sort.split(",");
+    Sort.Direction direction = "desc".equalsIgnoreCase(sortParams[1]) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sortParams[0]));
+  }
+  return staticsService.findAll(pageable).getContent();
+}
+
+```
+
+**效果：**
+
+<img src="images/2025313.png" alt="20250313134007" style="zoom: 67%;" />

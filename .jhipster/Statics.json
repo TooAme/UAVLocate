@@ -1,0 +1,36 @@
+{
+  "annotations": {
+    "changelogDate": "20250326032638"
+  },
+  "applications": "*",
+  "fields": [
+    {
+      "fieldName": "time",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "posX",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "posY",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "posZ",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "windSpeed",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "windDirection",
+      "fieldType": "String"
+    }
+  ],
+  "name": "Statics",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}
