@@ -21,7 +21,6 @@ public class HeWeatherService {
     private final WeatherMapper weatherMapper;
     private final RestTemplate restTemplate;
 
-    // 配置参数
     @Value("${heweather.api.key}")
     private String apiKey;
 
@@ -34,17 +33,26 @@ public class HeWeatherService {
         this.restTemplate = restTemplate;
     }
 
-    @Transactional
     public HeWeatherNowResponse fetchAndSaveWeather(String locationId) {
-        HeWeatherNowResponse response = fetchFromApi(locationId);
-        WeatherData weatherData = weatherMapper.toEntity(response);
-        weatherData.setLocationId(locationId);
-        WeatherData savedData = weatherDataRepository.save(weatherData);
-        return weatherMapper.toDto(savedData);
-    }
+        log.debug("Fetching weather data for location: {}", locationId);
 
-    private HeWeatherNowResponse fetchFromApi(String locationId) {
+        // 构建API URL
         String url = String.format("%s?location=%s&key=%s", apiUrl, locationId, apiKey);
-        return restTemplate.getForObject(url, HeWeatherNowResponse.class);
+
+        // 调用和风天气API
+        HeWeatherNowResponse response = restTemplate.getForObject(url, HeWeatherNowResponse.class);
+
+        if (response != null && response.getNow() != null) {
+            // 转换为实体并保存
+            WeatherData weatherData = weatherMapper.toEntity(response);
+            weatherData.setLocationId(locationId);
+            weatherDataRepository.save(weatherData);
+
+            log.debug("Saved weather data for location: {}", locationId);
+        } else {
+            log.warn("No weather data received for location: {}", locationId);
+        }
+
+        return response;
     }
 }

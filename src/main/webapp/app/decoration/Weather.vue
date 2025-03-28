@@ -1,19 +1,19 @@
 <template>
   <div class="weather-container">
-    <h2 v-if="weatherData">德阳当前天气</h2>
     <div v-if="loading" class="alert alert-info">加载中...</div>
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
     <div v-if="weatherData" class="weather-card">
       <div class="weather-details">
-        <p>温度: {{ weatherData.temp }}°C</p>
-        <p>体感温度: {{ weatherData.feelsLike }}°C</p>
-        <p>天气状况: {{ weatherData.text }}</p>
-        <p>风速: {{ weatherData.windSpeed }} km/h</p>
-        <p>风向: {{ weatherData.windDir }} ({{ weatherData.wind360 }}°)</p>
-        <p>更新时间: {{ formatTime(weatherData.obsTime) }}</p>
+        <p>温度: {{ weatherData.temp || '暂无数据' }}°C</p>
+        <p>体感温度: {{ weatherData.feelsLike || '暂无数据' }}°C</p>
+        <p>天气状况: {{ weatherData.text || '暂无数据' }}</p>
+        <p>风速: {{ weatherData.windSpeed || '暂无数据' }} km/h</p>
+        <p>风向: {{ weatherData.windDir || '暂无数据' }} ({{ weatherData.wind360 || '暂无数据' }}°)</p>
+        <p>更新时间: {{ weatherData.obsTime || '暂无数据' }}</p>
       </div>
     </div>
+    <div v-else class="alert alert-warning">暂无天气数据</div>
 
     <button @click="refreshWeather" class="btn btn-primary mt-3">刷新数据</button>
   </div>
@@ -21,7 +21,6 @@
 
 <script>
 import axios from 'axios';
-import { format } from 'date-fns';
 
 export default {
   name: 'Weather',
@@ -52,9 +51,6 @@ export default {
     refreshWeather() {
       this.fetchWeather();
     },
-    formatTime(timestamp) {
-      return format(new Date(timestamp), 'yyyy-MM-dd HH:mm');
-    },
     // getWeatherIcon(weatherText) {
     //   const icons = {
     //     晴: 'sunny.png',
@@ -80,7 +76,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 20px;
-  background: #f8f9fa;
+  background: #242424;
   border-radius: 10px;
   padding: 20px;
   margin-top: 20px;

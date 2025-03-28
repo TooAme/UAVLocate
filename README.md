@@ -4,7 +4,7 @@
 
 # 2025.3 I
 
-## :pushpin:**位置算法**
+## :pushpin: **位置算法**
 
 **（python获取无人机XYZ坐标并算法计算出偏移再传输给springboot,通过service层修改数据库）**
 
@@ -144,7 +144,7 @@ public class DronePositionResource {
 
 # 2025.3 II
 
-## :ballot_box_with_check:项目重启
+## :ballot_box_with_check: 项目重启
 
 **做完公司项目之后回来看发现vite报错。**​​
 
@@ -269,21 +269,21 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 # 2025.3 III
 
-## :sun_behind_large_cloud:气象API
+## :sun_behind_large_cloud: 气象API
 
 **由于风速计部署及数据传输过于复杂等原因，改用从API获取数据并传输到Spring Boot中。**
 
 :o:**使用API获取数据的优缺点：**
 
-​ **API提供了标准化的数据接口，可以直接通过HTTP请求获取数据，无需复杂的硬件设备和现场部署。**
+**API提供了标准化的数据接口，可以直接通过HTTP请求获取数据，无需复杂的硬件设备和现场部署。**
 
-​ **数据通常以结构化的格式（如JSON或XML）返回，易于解析和处理。**
+**数据通常以结构化的格式（如JSON或XML）返回，易于解析和处理。**
 
-​ **并且许多气象API提供实时数据或高频率更新的数据，能够满足对实时气象信息的需求。**
+**并且许多气象API提供实时数据或高频率更新的数据，能够满足对实时气象信息的需求。**
 
-​ **不过API提供商可能会调整数据格式或接口，需要及时更新代码。而风力计可以实时测量当前的风速和风向，数据获取几乎无延迟。**
+**不过API提供商可能会调整数据格式或接口，需要及时更新代码。而风力计可以实时测量当前的风速和风向，数据获取几乎无延迟。**
 
-​ **然后是最恐怖的一点：主流气象API每个月都要支付四位数以上的价格。:laughing:**
+**然后是最恐怖的一点：主流气象API每个月都要支付四位数以上的价格。:laughing:**
 
 **因此也固定算法实现的位置为Springboot的Service类，而不再是使用python，python仅提供无人机的三维位置数据。**
 
@@ -313,7 +313,7 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 # 2025.3 IV
 
-## :sun_behind_large_cloud:气象API-和风天气
+## :sun_behind_large_cloud: 气象API-和风天气
 
 **今天查阅的时候发现了另一款有360度风向以及每小时风速的免费API：和风天气，每日1000次的访问量已经足够。**
 
@@ -342,11 +342,293 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 <img src="images/2025317.png" alt="20250313134007" style="zoom: 90%;" />
 
+## Springboot​ :link:
+
+**weatherData:**
+
+```java
+package com.chenhy.domain;
+
+import jakarta.persistence.*;
+import java.io.Serializable;
+
+@Entity
+@Table(name = "weather_data")
+public class WeatherData implements Serializable {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  private String locationId;
+  private Integer temperature;
+  private Integer windSpeed;
+  private String windDirection;
+  private String observationTime; // 修改为 String 类型
+  // 下面是getter和setter
+}
+
+```
+
+**config类中定义restTemplate：**
+
+```java
+@Configuration
+public class RestTemplateConfig {
+
+  @Bean
+  public RestTemplate restTemplate(RestTemplateBuilder builder) {
+    // 自定义 SimpleClientHttpRequestFactory 设置超时
+    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+    requestFactory.setConnectTimeout(5000); // 连接超时 5 秒
+    requestFactory.setReadTimeout(30000); // 读取超时 30 秒
+
+    // 使用自定义 RequestFactory 构建 RestTemplate
+    RestTemplate restTemplate = builder.requestFactory(() -> requestFactory).build();
+    return restTemplate;
+  }
+}
+
+```
+
+**创建service类：**
+
+```java
+package com.chenhy.service;
+
+import com.chenhy.domain.WeatherData;
+import com.chenhy.repository.WeatherDataRepository;
+import com.chenhy.service.dto.HeWeatherNowResponse;
+import com.chenhy.service.mapper.WeatherMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+@Service
+@Transactional
+public class HeWeatherService {
+
+  private final Logger log = LoggerFactory.getLogger(HeWeatherService.class);
+
+  private final WeatherDataRepository weatherDataRepository;
+  private final WeatherMapper weatherMapper;
+  private final RestTemplate restTemplate;
+
+  // 配置参数
+  @Value("${heweather.api.key}")
+  private String apiKey;
+
+  @Value("${heweather.api.url}")
+  private String apiUrl;
+
+  public HeWeatherService(WeatherDataRepository weatherDataRepository, WeatherMapper weatherMapper, RestTemplate restTemplate) {
+    this.weatherDataRepository = weatherDataRepository;
+    this.weatherMapper = weatherMapper;
+    this.restTemplate = restTemplate;
+  }
+
+  @Transactional
+  public HeWeatherNowResponse fetchAndSaveWeather(String locationId) {
+    HeWeatherNowResponse response = fetchFromApi(locationId);
+    WeatherData weatherData = weatherMapper.toEntity(response);
+    weatherData.setLocationId(locationId);
+    WeatherData savedData = weatherDataRepository.save(weatherData);
+    return weatherMapper.toDto(savedData);
+  }
+
+  private HeWeatherNowResponse fetchFromApi(String locationId) {
+    String url = String.format("%s?location=%s&key=%s", apiUrl, locationId, apiKey);
+    return restTemplate.getForObject(url, HeWeatherNowResponse.class);
+  }
+}
+
+```
+
+**创建repository类：**
+
+```java
+package com.chenhy.repository;
+
+import com.chenhy.domain.WeatherData;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> {
+  // 添加自定义查询方法
+  WeatherData findFirstByLocationIdOrderByObservationTimeDesc(String locationId);
+}
+
+```
+
+**根据返回的 JSON格式创建DTO：**
+
+```java
+package com.chenhy.service.dto;
+
+import java.util.List;
+
+public class HeWeatherNowResponse {
+
+  private String code;
+  private String updateTime;
+  private String fxLink;
+  private Now now;
+  private Refer refer;
+
+  // Getters和Setters
+
+  public static class Now {
+
+    private String obsTime;
+    private Integer temp;
+    private String feelsLike;
+    private String icon;
+    private String text;
+    private String wind360;
+    private String windDir;
+    private String windScale;
+    private Integer windSpeed;
+    private String humidity;
+    private String precip;
+    private String pressure;
+    private String vis;
+    private String cloud;
+    private String dew;
+    // Getters和Setters
+  }
+
+  public static class Refer {
+
+    private List<String> sources;
+    private List<String> license;
+    // Getters和Setters
+  }
+}
+
+```
+
+**路由控制器：**
+
+```java
+package com.chenhy.web.rest;
+
+import com.chenhy.domain.WeatherData;
+import com.chenhy.service.HeWeatherService;
+import com.chenhy.service.dto.HeWeatherNowResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/weather")
+public class WeatherResource {
+
+  private final Logger log = LoggerFactory.getLogger(WeatherResource.class);
+
+  private final HeWeatherService heWeatherService;
+
+  public WeatherResource(HeWeatherService heWeatherService) {
+    this.heWeatherService = heWeatherService;
+  }
+
+  @GetMapping("/{locationId}")
+  public ResponseEntity<HeWeatherNowResponse> getWeatherData(@PathVariable String locationId) {
+    log.debug("REST request to get weather for location: {}", locationId);
+    HeWeatherNowResponse result = heWeatherService.fetchAndSaveWeather(locationId);
+    return ResponseEntity.ok(result);
+  }
+}
+
+```
+
 # 2025.3 V
 
 **测试昨天写的API接口，一直报错返回的 JSON含有非法字符，对非法字符处理后仍然无法正常接收到 JSON。**
 
 **今天回去和风天气的开放文档又看了看，发现其API返回的数据均使用了Gzip压缩，那么接下来对Gzip进行处理。**
+
+## Springboot :link:
+
+```java
+@Configuration
+public class RestTemplateConfig {
+
+  @Bean
+  public RestTemplate restTemplate(RestTemplateBuilder builder) {
+    // 自定义 SimpleClientHttpRequestFactory 设置超时
+    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+    requestFactory.setConnectTimeout(5000); // 连接超时 5 秒
+    requestFactory.setReadTimeout(30000); // 读取超时 30 秒
+
+    // 使用自定义 RequestFactory 构建 RestTemplate
+    RestTemplate restTemplate = builder.requestFactory(() -> requestFactory).build();
+
+    // 添加 Gzip 解压缩拦截器
+    List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>(restTemplate.getInterceptors());
+    interceptors.add(new GzipDecompressingClientHttpRequestInterceptor());
+    restTemplate.setInterceptors(interceptors);
+
+    return restTemplate;
+  }
+
+  // 自定义 Gzip 解压缩拦截器
+  public static class GzipDecompressingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+      ClientHttpResponse response = execution.execute(request, body);
+      if (isGzipResponse(response)) {
+        return new GzipDecompressingClientHttpResponse(response);
+      }
+      return response;
+    }
+
+    private boolean isGzipResponse(ClientHttpResponse response) {
+      return "gzip".equalsIgnoreCase(response.getHeaders().getFirst("Content-Encoding"));
+    }
+
+    private static class GzipDecompressingClientHttpResponse implements ClientHttpResponse {
+
+      private final ClientHttpResponse response;
+
+      public GzipDecompressingClientHttpResponse(ClientHttpResponse response) {
+        this.response = response;
+      }
+
+      @Override
+      public InputStream getBody() throws IOException {
+        return new GZIPInputStream(response.getBody());
+      }
+
+      @Override
+      public HttpStatusCode getStatusCode() throws IOException {
+        return response.getStatusCode();
+      }
+
+      @Override
+      public String getStatusText() throws IOException {
+        return response.getStatusText();
+      }
+
+      @Override
+      public void close() {
+        response.close();
+      }
+
+      @Override
+      public org.springframework.http.HttpHeaders getHeaders() {
+        return response.getHeaders();
+      }
+    }
+  }
+}
+
+```
 
 **在mySql中创建用来接受天气数据的表：**
 
@@ -360,4 +642,8 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 **<img src="演示视频/v202531.gif" alt="20250313134007" style="zoom: 260%;" />**
 
-**至此已完成气象API的调用，获得的数据是wind360和windSpeed并存在表weatherData中。**
+**测试页面:/weather：**
+
+<img src="演示视频/v202532.gif" alt="20250313134007" style="zoom: 260%;" />
+
+**至此已完成气象API的调用，获得的数据是wind360和windSpeed，并存在表weather_data中。**

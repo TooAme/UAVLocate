@@ -189,6 +189,7 @@ heweather:
   api:
     key: ec15c8e809f54b009f3ba76ab88c542c
     url: https://devapi.qweather.com/v7/weather/now
+
 jhipster:
   clientApp:
     name: 'uavLocateApp'
