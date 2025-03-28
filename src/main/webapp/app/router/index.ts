@@ -6,6 +6,7 @@ import account from '@/router/account';
 import admin from '@/router/admin';
 import entities from '@/router/entities';
 import pages from '@/router/pages';
+import Weather from '@/decoration/Weather.vue';
 
 export const createRouter = () =>
   createVueRouter({
@@ -27,6 +28,11 @@ export const createRouter = () =>
         name: 'NotFound',
         component: Error,
         meta: { error404: true },
+      },
+      {
+        path: '/weather',
+        name: 'Weather',
+        component: Weather,
       },
       ...account,
       ...admin,

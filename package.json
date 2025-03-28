@@ -88,6 +88,7 @@
     "bootstrap": "4.6.2",
     "bootstrap-vue": "2.23.1",
     "bootswatch": "4.6.2",
+    "date-fns": "^2.29.3",
     "dayjs": "1.11.13",
     "deepmerge": "4.3.1",
     "jhipster": "^0.0.2",
