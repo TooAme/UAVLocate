@@ -269,7 +269,7 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 # 2025.3 III
 
-## :sun_behind_large_cloud: 气象API
+## :sun_with_face: 气象API
 
 **由于风速计部署及数据传输过于复杂等原因，改用从API获取数据并传输到Spring Boot中。**
 
@@ -313,7 +313,7 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 # 2025.3 IV
 
-## :sun_behind_large_cloud: 气象API-和风天气
+## :sunflower: 和风天气API
 
 **今天查阅的时候发现了另一款有360度风向以及每小时风速的免费API：和风天气，每日1000次的访问量已经足够。**
 
@@ -342,7 +342,7 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 <img src="images/2025317.png" alt="20250313134007" style="zoom: 90%;" />
 
-## Springboot​ :link:
+## SpringBoot​ :link:
 
 **weatherData:**
 
@@ -548,11 +548,13 @@ public class WeatherResource {
 
 # 2025.3 V
 
+## :package: ​JSON解包
+
 **测试昨天写的API接口，一直报错返回的 JSON含有非法字符，对非法字符处理后仍然无法正常接收到 JSON。**
 
 **今天回去和风天气的开放文档又看了看，发现其API返回的数据均使用了Gzip压缩，那么接下来对Gzip进行处理。**
 
-## Springboot :link:
+## SpringBoot :link:
 
 ```java
 @Configuration
@@ -647,3 +649,78 @@ public class RestTemplateConfig {
 <img src="演示视频/v202532.gif" alt="20250313134007" style="zoom: 260%;" />
 
 **至此已完成气象API的调用，获得的数据是wind360和windSpeed，并存在表weather_data中。**
+
+# 2025.3 VI
+
+## :hourglass: ​定时更新
+
+**添加功能（逻辑）：每十秒更新一条Statics，并调用weatherDataRepository的**
+
+**findFirstByLocationIdOrderByObservationTimeDesc(locationId)方法，**
+
+**将数据表weather_data最新一条数据的风速和风向存入该条新数据中。**
+
+## SpringBoot :link:
+
+**WeatherDataRepository内自定义查询方法:**
+
+```java
+WeatherData findFirstByLocationIdOrderByObservationTimeDesc(String locationId);
+
+```
+
+**SpringBoot程序添加注解启用定时任务：**
+
+```java
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+```
+
+**StaticsService内逻辑实现：**
+
+```java
+@Scheduled(fixedRate = 10000) // 10s
+public void addNewStatics() {
+  LOG.debug("Executing scheduled task to add new Statics");
+
+  String locationId = "101272001"; // 用德阳测试
+  LOG.debug("Using locationId: {}", locationId); // 添加日志输出locationId
+
+  // 获取最新的WeatherData记录
+  WeatherData latestWeatherData = weatherDataRepository.findFirstByLocationIdOrderByObservationTimeDesc(locationId);
+  if (latestWeatherData != null) {
+    Statics newStatics = new Statics();
+    newStatics.setWindSpeed(latestWeatherData.getWindSpeed().longValue());
+    newStatics.setWindDirection(latestWeatherData.getWindDirection());
+
+    // 设置其他字段，这里假设其他字段可以为null或默认值
+    newStatics.setTime(java.time.Instant.now());
+    newStatics.setPosX(0L);
+    newStatics.setPosY(0L);
+    newStatics.setPosZ(0L);
+
+    // 保存新的Statics记录
+    Statics savedStatics = save(newStatics);
+    LOG.debug("New Statics record added with ID: {}", savedStatics.getId());
+  } else {
+    LOG.warn("No latest WeatherData found to create a new Statics record for locationId: {}", locationId); // 修改日志输出，包含locationId
+  }
+}
+
+```
+
+**效果：**
+
+<img src="images/2025320.png" alt="20250313134007" style="zoom: 90%;" />
+
+**接下来需要的是获取XYZ坐标并存入另一个表PosData中，再调用赋予给这条新数据的XYZ字段上。**
+
+**虽然说是风向360，但是最少也有45°的差距......**
+
+**今天再更新一下前端，下个月要做算法了。**
+
+**现在的数据界面数据是静态的，需要刷新才会显示出新数据，我试着把它做成响应式的吧。**
+
+**在做开题报告的时候就把最初版本的前端给做出来了，没有记录。那接下来就把首页翻新一下。**

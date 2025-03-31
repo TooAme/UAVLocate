@@ -1,18 +1,18 @@
 package com.chenhy.service;
 
 import com.chenhy.domain.Statics;
+import com.chenhy.domain.WeatherData;
 import com.chenhy.repository.StaticsRepository;
-import java.util.List;
+import com.chenhy.repository.WeatherDataRepository;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Service Implementation for managing {@link com.chenhy.domain.Statics}.
@@ -24,9 +24,12 @@ public class StaticsService {
     private static final Logger LOG = LoggerFactory.getLogger(StaticsService.class);
 
     private final StaticsRepository staticsRepository;
+    private final WeatherDataRepository weatherDataRepository;
 
-    public StaticsService(StaticsRepository staticsRepository) {
+    @Autowired
+    public StaticsService(StaticsRepository staticsRepository, WeatherDataRepository weatherDataRepository) {
         this.staticsRepository = staticsRepository;
+        this.weatherDataRepository = weatherDataRepository;
     }
 
     /**
@@ -117,5 +120,34 @@ public class StaticsService {
     public void delete(Long id) {
         LOG.debug("Request to delete Statics : {}", id);
         staticsRepository.deleteById(id);
+    }
+
+    // 定时任务，每1秒执行一次
+    @Scheduled(fixedRate = 1000)
+    public void addNewStatics() {
+        LOG.debug("Executing scheduled task to add new Statics");
+
+        String locationId = "101272001";
+        LOG.debug("Using locationId: {}", locationId); // 添加日志输出locationId
+
+        // 获取最新的WeatherData记录
+        WeatherData latestWeatherData = weatherDataRepository.findFirstByLocationIdOrderByObservationTimeDesc(locationId);
+        if (latestWeatherData != null) {
+            Statics newStatics = new Statics();
+            newStatics.setWindSpeed(latestWeatherData.getWindSpeed().longValue());
+            newStatics.setWindDirection(latestWeatherData.getWindDirection());
+
+            // 设置其他字段，这里假设其他字段可以为null或默认值
+            newStatics.setTime(java.time.Instant.now());
+            newStatics.setPosX(0L);
+            newStatics.setPosY(0L);
+            newStatics.setPosZ(0L);
+
+            // 保存新的Statics记录
+            Statics savedStatics = save(newStatics);
+            LOG.debug("New Statics record added with ID: {}", savedStatics.getId());
+        } else {
+            LOG.warn("No latest WeatherData found to create a new Statics record for locationId: {}", locationId); // 修改日志输出，包含locationId
+        }
     }
 }
