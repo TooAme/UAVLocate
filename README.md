@@ -146,7 +146,7 @@ public class DronePositionResource {
 
 ## :ballot_box_with_check: 项目重启
 
-**做完公司项目之后回来看发现vite报错。**​​
+**做完公司项目之后回来看发现vite报错。**
 
 **<img src="images/202534.png" alt="20250313134007" style="zoom:108%;" />**
 
@@ -154,15 +154,15 @@ public class DronePositionResource {
 
 **然后在导入JDL实体的时候jhipster挂了，**
 
-**jhipster为什么会失踪，原来是我重装node的时候把所有的包都清理了。**​​
+**jhipster为什么会失踪，原来是我重装node的时候把所有的包都清理了。**
 
 <img src="images/202533.png" alt="20250313134007" style="zoom:90%;" />
 
-**成功导入JDL实体。**​​
+**成功导入JDL实体。**
 
 <img src="images/202535.png" alt="20250313134007" style="zoom:95%;" />
 
-**启动Springboot，报错端口被占用。**​​
+**启动Springboot，报错端口被占用。**
 
 <img src="images/202536.png" alt="20250313134007" style="zoom: 67%;" />
 
@@ -170,7 +170,7 @@ public class DronePositionResource {
 
 <img src="images/202537.png" alt="20250313134007" style="zoom: 67%;" />
 
-**Springboot启动成功​ :v:**​
+**Springboot启动成功 :v:**
 
 <img src="images/202538.png" alt="20250313134007" style="zoom: 67%;" />
 
@@ -190,7 +190,7 @@ public class DronePositionResource {
 
 :speech_balloon: **问题：每有数据刷新就更新可能会时快时慢地刷出数据，不便于测试和查阅。**
 
-**暂且选择第一种方案，先把刷新时间设的久一些，后续再调整。**​​
+**暂且选择第一种方案，先把刷新时间设的久一些，后续再调整。**
 
 <img src="images/2025310.png" alt="20250313134007" style="zoom: 67%;" />
 
@@ -724,3 +724,13 @@ public void addNewStatics() {
 **现在的数据界面数据是静态的，需要刷新才会显示出新数据，我试着把它做成响应式的吧。**
 
 **在做开题报告的时候就把最初版本的前端给做出来了，没有记录。那接下来就把首页翻新一下。**
+
+# :computer: ​编译说明
+
+**node版本：^22**
+
+**jdk：21/23**
+
+**前端运行：npm start**
+
+**端口：9000**
