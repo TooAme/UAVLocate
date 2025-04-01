@@ -1,81 +1,65 @@
 <template>
-  <div class="home row">
-    <div class="col-md-3"></div>
-    <span class="hipster img-fluid rounded"></span>
-    <span class="img2"></span>
-    <span class="img3"></span>
-    <span class="img4"></span>
-
-    <div class="col-md-20">
-      <div class="msgblock">
-        <h1 class="msg" v-text="'无人机降落点X轴偏移:  5.3CM'"></h1>
-        <h1 class="msg" v-text="'无人机降落点Y轴偏移:  -8.4CM'"></h1>
-        <h1 class="msg" v-text="'无人机相对降落点(Z轴)高度:  46CM'"></h1>
-        <h1 class="msg" v-text="'当前风向:  北偏西32度   风速:  3km/h'"></h1>
-      </div>
+  <div class="home">
+    <header-image class="header-image" />
+    <div class="sidebar left-sidebar">
+      <div class="left-sidebar-under"></div>
     </div>
-    <!--      <p class="lead" v-text="t$('home.subtitle')"></p>-->
+    <div class="sidebar right-sidebar">
+      <div class="right-sidebar-under"></div>
+      <scroll-box class="scroll-box" />
+    </div>
+    <!-- <get-winds class="winds-position" /> -->
 
-    <!--      <div>-->
-    <!--        <div class="alert alert-success" v-if="authenticated">-->
-    <!--          <span v-if="username" v-text="t$('home.logged.message', { username: username })"></span>-->
-    <!--        </div>-->
+    <!-- <div class="content row">
+      <div class="col-md-3"></div>
+      <span class="hipster img-fluid rounded"></span>
+      <span class="img2"></span>
+      <span class="img3"></span>
+      <span class="img4"></span>
 
-    <!--        <div class="alert alert-warning" v-if="!authenticated">-->
-    <!--          <span v-text="t$('global.messages.info.authenticated.prefix')"></span>-->
-    <!--          <a class="alert-link" @click="openLogin()" v-text="t$('global.messages.info.authenticated.link')"></a-->
-    <!--          ><span v-html="t$('global.messages.info.authenticated.suffix')"></span>-->
-    <!--        </div>-->
-    <!--        <div class="alert alert-warning" v-if="!authenticated">-->
-    <!--          <span v-text="t$('global.messages.info.register.noaccount')"></span>&nbsp;-->
-    <!--          <router-link class="alert-link" to="/register" v-text="t$('global.messages.info.register.link')"></router-link>-->
-    <!--        </div>-->
-    <!--      </div>-->
-
-    <!--      <p v-text="t$('home.question')"></p>-->
-
-    <!--      <ul>-->
-    <!--        <li><a href="https://www.jhipster.tech/" target="_blank" rel="noopener noreferrer" v-text="t$('home.link.homepage')"></a></li>-->
-    <!--        <li>-->
-    <!--          <a-->
-    <!--            href="https://stackoverflow.com/tags/jhipster/info"-->
-    <!--            target="_blank"-->
-    <!--            rel="noopener noreferrer"-->
-    <!--            v-text="t$('home.link.stackoverflow')"-->
-    <!--          ></a>-->
-    <!--        </li>-->
-    <!--        <li>-->
-    <!--          <a-->
-    <!--            href="https://github.com/jhipster/generator-jhipster/issues?state=open"-->
-    <!--            target="_blank"-->
-    <!--            rel="noopener noreferrer"-->
-    <!--            v-text="t$('home.link.bugtracker')"-->
-    <!--          ></a>-->
-    <!--        </li>-->
-    <!--        <li>-->
-    <!--          <a-->
-    <!--            href="https://gitter.im/jhipster/generator-jhipster"-->
-    <!--            target="_blank"-->
-    <!--            rel="noopener noreferrer"-->
-    <!--            v-text="t$('home.link.chat')"-->
-    <!--          ></a>-->
-    <!--        </li>-->
-    <!--        <li>-->
-    <!--          <a href="https://twitter.com/jhipster" target="_blank" rel="noopener noreferrer" v-text="t$('home.link.follow')"></a>-->
-    <!--        </li>-->
-    <!--      </ul>-->
-
-    <!--      <p>-->
-    <!--        <span v-text="t$('home.like')"></span>-->
-    <!--        <a href="https://github.com/jhipster/generator-jhipster" target="_blank" rel="noopener noreferrer" v-text="t$('home.github')"></a>!-->
-    <!--      </p>-->
-    <!--    </div>-->
+      <div class="col-md-20">
+        <div class="msgblock">
+          <h1 class="msg" v-text="'无人机降落点X轴偏移:  5.3CM'"></h1>
+          <h1 class="msg" v-text="'无人机降落点Y轴偏移:  -8.4CM'"></h1>
+          <h1 class="msg" v-text="'无人机相对降落点(Z轴)高度:  46CM'"></h1>
+          <h1 class="msg" v-text="'当前风向:  北偏西32度   风速:  3km/h'"></h1>
+        </div>
+      </div>
+    </div> -->
   </div>
 </template>
 
-<script lang="ts" src="./home.component.ts"></script>
+<script lang="ts">
+import { defineComponent } from 'vue';
+import HeaderImage from '@/decoration/headerImage.vue';
+import GetWinds from '@/decoration/getwinds.vue';
+import ScrollBox from '@/decoration/scrollBox.vue';
+
+export default defineComponent({
+  name: 'Home',
+  components: {
+    HeaderImage,
+    GetWinds,
+    ScrollBox,
+  },
+});
+</script>
 
 <style scoped>
+.home {
+  height: 100vh;
+  /* overflow: hidden;禁止滚动 */
+  position: fixed; /* 固定位置 */
+  width: 100%; /* 确保宽度占满 */
+  /* top: 0;固定在顶部 */
+  /* left: 0;固定在左侧 */
+}
+
+.content {
+  position: relative;
+  padding: 20px;
+}
+
 .msgblock {
   position: absolute;
   top: 90px;
@@ -83,23 +67,17 @@
   background: border-box rgb(46, 46, 46);
   border-radius: 5px;
 }
+
 .msg {
   font-size: 1.65em;
   font-family: Arial, sans-serif;
   font-weight: bolder;
   font-style: italic;
   color: rgba(255, 255, 255, 0.915);
-  /* border: 0.9mm rgba(255, 255, 255, 0.808);
-  border-style: outset; */
-
-  /* outline: 0.5rem solid khaki; */
-  /* box-shadow: 0 0 0 2rem skyblue; */
-  /* border-radius: 5px; */
-  /* font: bold 1rem sans-serif; */
   margin: 25px 15px 25px 10px;
   padding: 0.6rem;
-  /* outline-offset: 5rem; */
 }
+
 .img2 {
   display: inline-block;
   width: 263px;
@@ -110,6 +88,7 @@
   top: 240px;
   left: 550px;
 }
+
 .img3 {
   display: inline-block;
   width: 313px;
@@ -120,6 +99,7 @@
   top: 85px;
   left: 930px;
 }
+
 .img4 {
   display: inline-block;
   width: 15px;
@@ -130,4 +110,67 @@
   top: 310px;
   left: 1110px;
 }
+
+.header-image {
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.winds-position {
+  position: fixed;
+  top: 200px;
+  right: 20px;
+  z-index: 1001;
+}
+
+.scroll-box {
+  position: absolute;
+  top: 0.9vh;
+  left: 0.7vw;
+  z-index: 1010;
+}
+
+.sidebar {
+  color: rgba(255, 255, 255, 0.767);
+  display: flex;
+  z-index: 1000;
+  pointer-events: none;
+  background-blend-mode: multiply;
+} /* 侧边栏 */
+.left-sidebar-under {
+  position: fixed;
+  top: 160px;
+  bottom: 0;
+  width: 32.4vw;
+  left: 0;
+  background-image: url('images/最底下矩形框.png');
+  background-size: cover;
+} /* 左侧边栏下层 */
+.left-sidebar {
+  position: fixed;
+  top: 160px;
+  bottom: 0;
+  width: 31.4vw;
+  left: 0;
+  background-image: url('images/第二层矩形框翻转.png');
+  background-size: cover;
+} /* 左侧边栏上层 */
+.right-sidebar-under {
+  position: fixed;
+  top: 160px;
+  bottom: 0;
+  width: 32.4vw;
+  right: 0;
+  background-image: url('images/最底下矩形框翻转.png');
+  background-size: cover;
+} /* 右侧边栏下层 */
+.right-sidebar {
+  position: fixed;
+  top: 160px;
+  bottom: 0;
+  width: 31.4vw;
+  right: 0;
+  background-image: url('images/第二层矩形框.png');
+  background-size: cover;
+} /* 右侧边栏上层 */
 </style>

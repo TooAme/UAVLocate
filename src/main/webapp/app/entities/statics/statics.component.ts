@@ -1,5 +1,6 @@
-import { type Ref, defineComponent, inject, onMounted, ref } from 'vue';
+import { type Ref, defineComponent, inject, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import axios from 'axios';
 
 import StaticsService from './statics.service';
 import { type IStatics } from '@/shared/model/statics.model';
@@ -16,18 +17,26 @@ export default defineComponent({
     const alertService = inject('alertService', () => useAlertService(), true);
 
     const statics: Ref<IStatics[]> = ref([]);
-
     const isFetching = ref(false);
+    let refreshInterval: number | null = null;
 
-    const clear = () => {};
+    const clear = () => {
+      if (refreshInterval) {
+        window.clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    };
 
     const retrieveStaticss = async () => {
+      if (isFetching.value) return; // 防止重复请求
       isFetching.value = true;
       try {
         const res = await staticsService().retrieve();
         statics.value = res.data;
-      } catch (err) {
-        alertService.showHttpError(err.response);
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          alertService.showHttpError(err.response);
+        }
       } finally {
         isFetching.value = false;
       }
@@ -39,18 +48,27 @@ export default defineComponent({
 
     onMounted(async () => {
       await retrieveStaticss();
+      // 每1秒自动刷新一次数据
+      refreshInterval = window.setInterval(retrieveStaticss, 1000);
     });
 
-    const removeId: Ref<number> = ref(null);
+    onUnmounted(() => {
+      clear();
+    });
+
+    const removeId = ref<number | null>(null);
     const removeEntity = ref<any>(null);
     const prepareRemove = (instance: IStatics) => {
-      removeId.value = instance.id;
-      removeEntity.value.show();
+      if (instance.id) {
+        removeId.value = instance.id;
+        removeEntity.value.show();
+      }
     };
     const closeDialog = () => {
       removeEntity.value.hide();
     };
     const removeStatics = async () => {
+      if (!removeId.value) return;
       try {
         await staticsService().delete(removeId.value);
         const message = t$('uavLocateApp.statics.deleted', { param: removeId.value }).toString();
@@ -58,8 +76,10 @@ export default defineComponent({
         removeId.value = null;
         retrieveStaticss();
         closeDialog();
-      } catch (error) {
-        alertService.showHttpError(error.response);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          alertService.showHttpError(error.response);
+        }
       }
     };
 

@@ -32,7 +32,7 @@
 
 **那么下降所需时间为`197\*0.02/0.4=9.85s`，**
 
-**风速为`1000m/h`根据风向可拆分为X轴风速和Y轴风速，**
+**风速为`0.02m/s`根据风向可拆分为X轴风速和Y轴风速，**
 
 **<img src="images/202532.png" alt="20250313134007" style="zoom:50%;" />**
 
@@ -41,6 +41,10 @@
 **风将使无人机产生的Y轴偏移`(+1)0.02·cos(30°)\*9.85=0.1706m`**
 
 **那么最终偏移即`(0.44-0.0985,0.92+0.1706)`。**
+
+**不过风不可能对无人机造成这么大的偏移，这是理想情况下，现在的飞机还都有防风稳定呢。**
+
+**姿态量变化也没怎么考虑。**
 
 **首先就这样，也不知道风向能不能通过风速计获取度数。**
 
@@ -283,7 +287,7 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 **不过API提供商可能会调整数据格式或接口，需要及时更新代码。而风力计可以实时测量当前的风速和风向，数据获取几乎无延迟。**
 
-**然后是最恐怖的一点：主流气象API每个月都要支付四位数以上的价格。:laughing:**
+**然后是最恐怖的一点：主流气象API每个月都要支付四位数以上的价格。**
 
 **因此也固定算法实现的位置为Springboot的Service类，而不再是使用python，python仅提供无人机的三维位置数据。**
 
@@ -342,7 +346,7 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 <img src="images/2025317.png" alt="20250313134007" style="zoom: 90%;" />
 
-## SpringBoot​ :link:
+### SpringBoot​ :link:
 
 **weatherData:**
 
@@ -554,7 +558,7 @@ public class WeatherResource {
 
 **今天回去和风天气的开放文档又看了看，发现其API返回的数据均使用了Gzip压缩，那么接下来对Gzip进行处理。**
 
-## SpringBoot :link:
+### SpringBoot :link:
 
 ```java
 @Configuration
@@ -660,7 +664,7 @@ public class RestTemplateConfig {
 
 **将数据表weather_data最新一条数据的风速和风向存入该条新数据中。**
 
-## SpringBoot :link:
+### SpringBoot :link:
 
 **WeatherDataRepository内自定义查询方法:**
 
@@ -724,6 +728,204 @@ public void addNewStatics() {
 **现在的数据界面数据是静态的，需要刷新才会显示出新数据，我试着把它做成响应式的吧。**
 
 **在做开题报告的时候就把最初版本的前端给做出来了，没有记录。那接下来就把首页翻新一下。**
+
+# 2025.4 I
+
+## :bookmark_tabs: 前端更新
+
+**之前那个首页确实有点丑了，新的设计方案大概就是在首页放置几个模块，模块内存放icon和数据。**
+
+**前一段时间给公司做的大屏前端就刚好能拿来用了。**
+
+**先将statics界面设为动态响应式，每秒自动刷新一次数据。**
+
+### TypeScript​ :link:
+
+**statics.component.ts:**
+
+```typescript
+import { type Ref, defineComponent, inject, onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import axios from 'axios';
+
+import StaticsService from './statics.service';
+import { type IStatics } from '@/shared/model/statics.model';
+import { useDateFormat } from '@/shared/composables';
+import { useAlertService } from '@/shared/alert/alert.service';
+
+export default defineComponent({
+  compatConfig: { MODE: 3 },
+  name: 'Statics',
+  setup() {
+    const { t: t$ } = useI18n();
+    const dateFormat = useDateFormat();
+    const staticsService = inject('staticsService', () => new StaticsService());
+    const alertService = inject('alertService', () => useAlertService(), true);
+
+    const statics: Ref<IStatics[]> = ref([]);
+    const isFetching = ref(false);
+    let refreshInterval: number | null = null;
+
+    const clear = () => {
+      if (refreshInterval) {
+        window.clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+    };
+
+    const retrieveStaticss = async () => {
+      if (isFetching.value) return; // 防止重复请求
+      isFetching.value = true;
+      try {
+        const res = await staticsService().retrieve();
+        statics.value = res.data;
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          alertService.showHttpError(err.response);
+        }
+      } finally {
+        isFetching.value = false;
+      }
+    };
+
+    const handleSyncList = () => {
+      retrieveStaticss();
+    };
+
+    onMounted(async () => {
+      await retrieveStaticss();
+      // 每1秒自动刷新一次数据
+      refreshInterval = window.setInterval(retrieveStaticss, 1000);
+    });
+
+    onUnmounted(() => {
+      clear();
+    });
+
+    const removeId = ref<number | null>(null);
+    const removeEntity = ref<any>(null);
+    const prepareRemove = (instance: IStatics) => {
+      if (instance.id) {
+        removeId.value = instance.id;
+        removeEntity.value.show();
+      }
+    };
+    const closeDialog = () => {
+      removeEntity.value.hide();
+    };
+    const removeStatics = async () => {
+      if (!removeId.value) return;
+      try {
+        await staticsService().delete(removeId.value);
+        const message = t$('uavLocateApp.statics.deleted', { param: removeId.value }).toString();
+        alertService.showInfo(message, { variant: 'danger' });
+        removeId.value = null;
+        retrieveStaticss();
+        closeDialog();
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          alertService.showHttpError(error.response);
+        }
+      }
+    };
+
+    return {
+      statics,
+      handleSyncList,
+      isFetching,
+      retrieveStaticss,
+      clear,
+      ...dateFormat,
+      removeId,
+      removeEntity,
+      prepareRemove,
+      closeDialog,
+      removeStatics,
+      t$,
+    };
+  },
+});
+```
+
+**效果：**
+
+<img src="演示视频/v202541.gif" alt="20250313134007" style="zoom: 260%;" />
+
+**接下来美化一下首页：头图+标题，左右两侧的半透明Sidebar。**
+
+**导入滚动栏，用于展示当前无人机的位置数据以及当前风速风向。**
+
+### Vue :link:
+
+**组件scrollBox.vue:**
+
+```vue
+<template>
+  <div class="dqsj">
+    <div class="dqsjtext">当前数据</div>
+    <div class="lbg-container">
+      <div class="lbgmc"></div>
+      <div class="lbgmctext">
+        序号&nbsp;&nbsp;&nbsp;&nbsp;时间&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X轴&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Y轴&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Z轴&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;风速&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;风向
+      </div>
+    </div>
+    <vue3ScrollSeamless class="scroll-wrap" :classOptions="classOptions" :dataList="formattedList">
+      <div v-if="formattedList.length > 0">
+        <el-row v-for="(item, i) of formattedList" :key="i">
+          <el-col :span="10" class="lbg">
+            <div>{{ item }}</div>
+          </el-col>
+        </el-row>
+      </div>
+    </vue3ScrollSeamless>
+  </div>
+</template>
+
+<script setup>
+import { reactive, ref, computed, onMounted } from 'vue';
+import { vue3ScrollSeamless } from 'vue3-scroll-seamless';
+import StaticsService from '@/entities/statics/statics.service';
+import { useDateFormat } from '@/shared/composables';
+
+const dateFormat = useDateFormat();
+const staticsService = new StaticsService();
+const statics = ref([]);
+
+const formattedList = computed(() => {
+  return statics.value.map((item, index) => {
+    const time = dateFormat.formatDateShort(item.time);
+    return `\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${index + 1}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${time}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${item.posX}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${item.posY}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${item.posZ}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${item.windSpeed}\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0${item.windDirection}\xa0\xa0\xa0\xa0\xa0\xa0`;
+  });
+});
+
+const classOptions = reactive({
+  step: 0.5,
+  limitMoveNum: 10,
+  direction: 1,
+});
+
+const retrieveStaticss = async () => {
+  try {
+    const res = await staticsService.retrieve();
+    statics.value = res.data;
+  } catch (err) {
+    console.error('Error fetching statics:', err);
+  }
+};
+
+onMounted(async () => {
+  await retrieveStaticss();
+  // 每1秒刷新一次数据
+  setInterval(retrieveStaticss, 1000);
+});
+</script>
+```
+
+**这里不可能调用API，而是调用了数据库最新一条的数据，这样可以节省API申请次数。**
+
+**效果：展示20个数据，新的数据序号在前，保持刷新。**
+
+<img src="演示视频/v202542.gif" alt="20250313134007" style="zoom: 260%;" />
 
 # :computer: ​编译说明
 
