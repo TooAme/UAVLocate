@@ -138,6 +138,9 @@
     ========================================================================== */
 .navbar-version {
   font-size: 0.65em;
+  font-family: '幼圆' !important;
+  font-weight: bolder;
+  color: rgba(255, 255, 255, 0.833);
 }
 
 @media screen and (min-width: 768px) {
@@ -154,6 +157,14 @@
 
 .navbar-title {
   display: inline-block;
+  font-family: '幼圆' !important;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 1px;
+  font-weight: bolder;
+  background: linear-gradient(to bottom, #fff 60%, #b9f4fd);
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 /* ==========================================================================
@@ -172,7 +183,7 @@
 
 .logo-img {
   height: 100%;
-  background: url('/content/images/logo-cafuc.png') no-repeat center center;
+  background: url('/content/images/小校徽.png') no-repeat center center;
   background-size: contain;
   width: 100%;
   filter: drop-shadow(0 0 0.05rem white);

@@ -141,7 +141,7 @@ export default defineComponent({
   position: fixed;
   top: 160px;
   bottom: 0;
-  width: 32.4vw;
+  width: 23.9vw;
   left: 0;
   background-image: url('images/最底下矩形框.png');
   background-size: cover;
@@ -150,7 +150,7 @@ export default defineComponent({
   position: fixed;
   top: 160px;
   bottom: 0;
-  width: 31.4vw;
+  width: 22.9vw;
   left: 0;
   background-image: url('images/第二层矩形框翻转.png');
   background-size: cover;

@@ -1,5 +1,5 @@
 <template>
-  <div class="header-image">无人机降落点监测系统</div>
+  <div class="header-image"></div>
 </template>
 
 <script lang="ts">
@@ -20,16 +20,16 @@ export default defineComponent({
 
 .header-image {
   position: fixed;
-  background-image: linear-gradient(to bottom, rgba(0, 13, 36, 0), rgba(63, 74, 92, 0)), url('images/标题栏.png');
-  background-color: rgba(0, 13, 36, 0.75);
+  background-image: linear-gradient(to bottom, rgba(0, 13, 36, 0), rgba(63, 74, 92, 0)), url('images/游泳馆.png');
+  /*background-color: rgba(0, 13, 36, 0.75);*/
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   width: 100vw;
-  height: 90px;
+  height: 100vh;
   top: 70px;
   left: 0;
-  z-index: 1011;
+  z-index: 2011;
   pointer-events: none;
   font-size: 2vw;
   font-family: '微软雅黑';
