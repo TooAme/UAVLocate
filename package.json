@@ -91,6 +91,7 @@
     "date-fns": "^2.29.3",
     "dayjs": "1.11.13",
     "deepmerge": "4.3.1",
+    "element-plus": "^2.9.7",
     "jhipster": "^0.0.2",
     "mitt": "^3.0.1",
     "pinia": "2.3.1",

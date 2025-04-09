@@ -37,7 +37,7 @@ const formattedList = computed(() => {
 });
 
 const classOptions = reactive({
-  step: 0.5,
+  step: 1.2,
   limitMoveNum: 10,
   direction: 1,
 });

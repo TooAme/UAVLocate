@@ -34,7 +34,7 @@
 
 **风速为`0.02m/s`根据风向可拆分为X轴风速和Y轴风速，**
 
-**<img src="images/202532.png" alt="20250313134007" style="zoom:50%;" />**
+**<img src="images/2025404.png" alt="20250313134007" style="zoom:40%;" />**
 
 **风将使无人机产生的X轴偏移`(-1)0.02·sin(30°)\*9.85=-0.0985m`**
 
@@ -307,9 +307,13 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 **以y轴正半轴为0度，向右增加度数，那么风向度数可以按照以下规则转换为方向：**
 
+<img src="images/2025402.png" alt="20250313134007" style="zoom:40%;" />
+
 **对于介于两个方向之间的度数，可以描述为“偏”某个方向。例如，45°可以描述为“北偏东45度”。**
 
 **计算各个方向的风速:**
+
+<img src="images/2025403.png" alt="20250313134007" style="zoom:50%;" />
 
 **经过测试，心知天气免费版无法获得风速和风向角度数据，不过没有关系，可以试用14天。**
 
@@ -933,7 +937,7 @@ onMounted(async () => {
 
 **这几天公司的任务稍微有点多，不过都做好了，现在让我们继续来更新前端。**
 
-**我又想了想这样的前端确实是有些商业化了，以至于不会让人觉得是一个学生做的，所以我们还是返璞归真吧。**
+**我又想了想这样的前端确实是有些商业化了，以至于不会让人觉得是一个学生做的，所以我们还是做得简约一点吧。**
 
 **直接从学校官网扒了几张图片拿来用，先把科技感满满的头图给换掉，右边的滚动栏暂时保留。**
 
@@ -941,9 +945,160 @@ onMounted(async () => {
 
 <img src="images/2025401.png" alt="20250313134007" style="zoom: 90%;" />
 
-**这样的话中间的空间足以接入摄像头的画面。**
+**这样的话空间也足以接入摄像头的画面。**
 
 **先插入一个视频播放器替代。**
+
+**一共添加两个组件：**
+
+- **将天气数据获取到的风速和风向展示出来**
+- **以及实时监控视频**
+
+**效果：（先填充了一个网上扒的测试视频）**
+
+<img src="演示视频/v202543.gif" alt="20250313134007" style="zoom: 260%;" />
+
+**那么中间空余的部分就非最终偏移数据莫属了，接下来完善后端算法。**
+
+# 2025.4 III
+
+## :chart_with_upwards_trend: 算法重写
+
+**目前不再打算使用价格高昂的Intel D400家族深度相机，而是使用四目普通摄像头识别。**
+
+<img src="images/2025405.png" alt="20250313134007" style="zoom: 40%;" />
+
+**演示时仅在网页展示四个视频，并获取视频中无人机的三维坐标，若有后续需求再考虑加装深度相机。**
+
+**先在前端添加一个录入框，输入测试用的无人机三维坐标XYZ（单位：米）**
+
+**发送到后端存入statics实体交给算法处理。**
+
+<img src="images/2025406.png" alt="20250313134007" style="zoom:100%;" />
+
+**成功写入坐标：**
+
+<img src="images/2025407.png" alt="20250313134007" style="zoom:160%;" />
+
+**考虑到偏移坐标不需要存储到数据库，我们直接在TypeScript中完成简单算法，这样可以直接调用所有计算所需的参数。**
+
+**由于目前单位仍未确定，先假定写入的测试数据单位为坐标格，转化关系为1坐标格1毫米。**
+
+**以当前参数（1000，-1000，1000，14，225）为例：**
+
+**步骤：**
+
+**1.风向筛子**
+
+**将风向模拟为一个坐标轴，因为各个象限计算方式不同，所以先初步将风向筛为四种。**
+
+**仍然是参考这张图：**
+
+<img src="images/2025403.png" alt="20250313134007" style="zoom:50%;" />
+
+**不同风向x轴y轴风向正负及计算方式不同，我先在代码中简单易懂地完成这部分。**
+
+### TypeScript :link:
+
+**countData为计算最终偏移的函数，参数为XYZ坐标及风速风向。**
+
+**Z轴坐标为计算降落时间的参数，Z轴距离除以降落速度即为降落时间。**
+
+**这里先把降落速度设为定值（1000毫米每秒）**
+
+```typescript
+const countData = (posX: number, posY: number, posZ: number, windSpeed: number, windDirection: number | string): FinalData => {
+  // 转换风向360为数字
+  const windDir = typeof windDirection === 'string' ? parseFloat(windDirection) : windDirection;
+
+  // 根据风向角度计算x和y方向分量
+  let windX = 0;
+  let windY = 0;
+
+  // 降落速度先设为定值：1000毫米每秒
+  let landSpeed = 1000;
+
+  // 将角度转换为弧度进行计算
+  const degToRad = (degrees: number) => (degrees * Math.PI) / 180;
+  const theta = degToRad(windDir);
+
+  // 根据风向范围计算分量
+  if (windDir >= 0 && windDir < 90) {
+    // 第一象限: 0-90度
+    // x方向风速 = v * sin(θ)
+    // y方向风速 = v * cos(θ)
+    windX = windSpeed * Math.sin(theta);
+    windY = windSpeed * Math.cos(theta);
+    console.log(`风向:${windDir}°(0-90°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+  } else if (windDir >= 90 && windDir < 180) {
+    // 第二象限: 90-180度
+    // x方向风速 = v * cos(θ-90°)
+    // y方向风速 = -v * sin(θ-90°)
+    const adjustedTheta = degToRad(windDir - 90);
+    windX = windSpeed * Math.cos(adjustedTheta);
+    windY = -windSpeed * Math.sin(adjustedTheta);
+    console.log(`风向:${windDir}°(90-180°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+  } else if (windDir >= 180 && windDir < 270) {
+    // 第三象限: 180-270度
+    // x方向风速 = -v * sin(θ-180°)
+    // y方向风速 = -v * cos(θ-180°)
+    const adjustedTheta = degToRad(windDir - 180);
+    windX = -windSpeed * Math.sin(adjustedTheta);
+    windY = -windSpeed * Math.cos(adjustedTheta);
+    console.log(`风向:${windDir}°(180-270°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+  } else if (windDir >= 270 && windDir <= 360) {
+    // 第四象限: 270-360度
+    // x方向风速 = -v * cos(θ-270°)
+    // y方向风速 = v * sin(θ-270°)
+    const adjustedTheta = degToRad(windDir - 270);
+    windX = -windSpeed * Math.cos(adjustedTheta);
+    windY = windSpeed * Math.sin(adjustedTheta);
+    console.log(`风向:${windDir}°(270-360°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+  }
+
+  // 计算最终偏移值
+  // 为了解决未赋值前使用变量的问题，先声明再赋值
+  let calculatedXOffset = 0;
+  let calculatedYOffset = 0;
+  let calculatedZOffset = 0;
+
+  calculatedXOffset = windX * (posZ / landSpeed);
+  calculatedYOffset = windY * (posZ / landSpeed);
+  calculatedZOffset = posZ; // Z轴偏移暂不考虑风向影响
+
+  return {
+    xOffset: calculatedXOffset,
+    yOffset: calculatedYOffset,
+    zOffset: calculatedZOffset,
+  };
+};
+```
+
+**注：该组件查找的是最新的一条Z轴（posZ）不为0的数据进行计算。**
+
+**并且计算结果仅为风使其偏移的距离，后续需要加上降落点位置的坐标，**
+
+**在风向偏移距离的基础上加上当前位置离降落点的距离。**
+
+**写法如下：**
+
+```typescript
+// 添加目标降落点XY坐标
+let targetPosX;
+let targetPosY;
+let targetPosZ;
+...
+// 合并
+calculatedXOffset = Math.abs(targetPosX - posX) + windX * (posZ/landSpeed);
+calculatedYOffset = Math.abs(targetPosY - posY) + windY * (posZ/landSpeed);
+calculatedZoffset = Math.abs(posZ - targetPosZ);
+```
+
+**在这里我先令目标降落点坐标为(0,0,0)**
+
+**效果：**
+
+<img src="演示视频/v2025405.gif" alt="20250313134007" style="zoom: 260%;" />
 
 # :computer: ​编译说明
 
@@ -954,3 +1109,57 @@ onMounted(async () => {
 **前端运行：npm start**
 
 **端口：9000**
+
+# :open_file_folder: ​项目结构
+
+**后端 (src/main/java/com/chenhy/ - ):**
+
+- **config/: Spring 的配置类。**
+
+- **domain/: JPA 实体类，代表数据库中的表（WeatherData.java）。**
+
+- **repository/: Spring Data JPA 仓库接口，用于数据库访问（WeatherDataRepository.java）。**
+
+- **service/: 业务逻辑层，包含服务类（HeWeatherService.java）、数据转换的 Mapper（WeatherMapper.java）和数据传输对象 DTO（HeWeatherNowResponse.java）。**
+
+- **web/rest/: Spring MVC/WebFlux 的 REST 控制器，处理 API 请求（WeatherResource.java）。**
+
+- **security/: Spring Security 相关的安全配置。**
+
+- **其他包: aop (切面)、management (管理端点) 等。**
+
+**前端 (src/main/webapp/app/):**
+
+- **core/: 核心应用组件，如主页 (home.vue)、导航栏、登录页面等。**
+
+- **entities/: 与 JHipster 生成的实体相关的组件（例如 statics/statics.vue, statics.component.ts）。**
+
+- **shared/: 可重用的组件、前端数据模型 (statics.model.ts)、服务、工具函数、前端的国际化 (i18n) 文件等。**
+
+- **account/: 用户账户管理相关的组件。**
+
+- **admin/: 管理功能相关的组件（用户管理、系统指标、日志等）。**
+
+- **router/: Vue Router 的路由配置。**
+
+- **assets/ 或 static/: 静态资源，如图片、字体等。**
+
+- **styles/: 全局 CSS 样式。**
+
+- **main.ts: Vue 应用的主入口文件。**
+
+- **App.vue: Vue 应用的根组件。**
+
+- **decoration/ (自定义): 添加的装饰性或特定功能的 UI 组件（headerImage.vue, getwinds.vue, finalData.vue 等）。**
+
+**配置 (src/main/resources/)**
+
+- **config/application.yml (及 .properties): 主要的 Spring Boot 配置文件（数据库连接、服务器端口、第三方 API 密钥等）。**
+
+- **i18n/: 后端消息的国际化文件。**
+
+- **liquibase/: 数据库表结构变更（迁移）的记录文件。**
+
+- **static/ 或 public/: 由 Web 服务器直接提供服务的静态资源。**
+
+- **templates/: 服务端模板文件（用于生成邮件内容）。**
