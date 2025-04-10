@@ -1,7 +1,7 @@
 <template>
   <div class="final-data-container">
     <div class="final-result">
-      <div class="result-title">当前偏移数据</div>
+      <div class="result-title">实时偏移数据</div>
       <div class="result-row">
         <span class="result-label">X轴偏移距离:</span>
         <span class="result-value">{{ finalData?.xOffset?.toFixed(2) || '--' }}</span>
@@ -19,6 +19,7 @@
         <span class="result-value">{{ lastUpdateTime }}</span>
       </div>
     </div>
+    <target-view v-if="finalData" :x-offset="finalData.xOffset" :y-offset="finalData.yOffset" class="target-view" />
   </div>
 </template>
 
@@ -26,6 +27,7 @@
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import type { IStatics } from '@/shared/model/statics.model';
+import TargetView from './target.vue';
 
 // Alert service interface
 interface AlertService {
@@ -49,6 +51,9 @@ interface FinalData {
 
 export default defineComponent({
   name: 'FinalData',
+  components: {
+    TargetView,
+  },
   setup() {
     const finalData = ref<FinalData | null>(null);
     const loading = ref(false);
@@ -66,16 +71,30 @@ export default defineComponent({
       let windX = 0;
       let windY = 0;
 
-      // 降落速度先设为定值：1000毫米每秒
-      let landSpeed = 1000;
+      // 将风速从千米每小时转换为毫米每秒
+      const windSpeedInMmPerSec = windSpeed * 277.778;
 
-      let targetPosX;
-      let targetPosY;
-      let targetPosZ;
+      // 降落速度40m以下均为3000毫米每秒
+      let landSpeed = 3000;
 
-      targetPosX = 0;
-      targetPosY = 0;
-      targetPosZ = 0;
+      // 降落过程时间posZ/landSpeed
+      let landtime = posZ / landSpeed;
+
+      // 无人机重量，先取20kg
+      let droneWeight = 20;
+
+      // 无人机受力面积，取0.1平方米
+      let droneArea = 0.1;
+
+      // 空气密度，取1.225千克/立方米
+      let airDensity = 1.225;
+
+      // 空气阻力系数，取0.47
+      let airResistanceCoefficient = 0.47;
+
+      let targetPosX = 0;
+      let targetPosY = 0;
+      let targetPosZ = 0;
 
       // 将角度转换为弧度进行计算
       const degToRad = (degrees: number) => (degrees * Math.PI) / 180;
@@ -84,46 +103,71 @@ export default defineComponent({
       // 根据风向范围计算分量
       if (windDir >= 0 && windDir < 90) {
         // 第一象限: 0-90度
-        // x方向风速 = v * sin(θ)
-        // y方向风速 = v * cos(θ)
-        windX = windSpeed * Math.sin(theta);
-        windY = windSpeed * Math.cos(theta);
-        console.log(`风向:${windDir}°(0-90°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+        windX = windSpeedInMmPerSec * Math.sin(theta);
+        windY = windSpeedInMmPerSec * Math.cos(theta);
+        console.log(`风向:${windDir}°(0-90°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
       } else if (windDir >= 90 && windDir < 180) {
         // 第二象限: 90-180度
-        // x方向风速 = v * cos(θ-90°)
-        // y方向风速 = -v * sin(θ-90°)
         const adjustedTheta = degToRad(windDir - 90);
-        windX = windSpeed * Math.cos(adjustedTheta);
-        windY = -windSpeed * Math.sin(adjustedTheta);
-        console.log(`风向:${windDir}°(90-180°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+        windX = windSpeedInMmPerSec * Math.cos(adjustedTheta);
+        windY = -windSpeedInMmPerSec * Math.sin(adjustedTheta);
+        console.log(`风向:${windDir}°(90-180°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
       } else if (windDir >= 180 && windDir < 270) {
         // 第三象限: 180-270度
-        // x方向风速 = -v * sin(θ-180°)
-        // y方向风速 = -v * cos(θ-180°)
         const adjustedTheta = degToRad(windDir - 180);
-        windX = -windSpeed * Math.sin(adjustedTheta);
-        windY = -windSpeed * Math.cos(adjustedTheta);
-        console.log(`风向:${windDir}°(180-270°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+        windX = -windSpeedInMmPerSec * Math.sin(adjustedTheta);
+        windY = -windSpeedInMmPerSec * Math.cos(adjustedTheta);
+        console.log(`风向:${windDir}°(180-270°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
       } else if (windDir >= 270 && windDir <= 360) {
         // 第四象限: 270-360度
-        // x方向风速 = -v * cos(θ-270°)
-        // y方向风速 = v * sin(θ-270°)
         const adjustedTheta = degToRad(windDir - 270);
-        windX = -windSpeed * Math.cos(adjustedTheta);
-        windY = windSpeed * Math.sin(adjustedTheta);
-        console.log(`风向:${windDir}°(270-360°), X向风速:${windX.toFixed(2)}, Y向风速:${windY.toFixed(2)}`);
+        windX = -windSpeedInMmPerSec * Math.cos(adjustedTheta);
+        windY = windSpeedInMmPerSec * Math.sin(adjustedTheta);
+        console.log(`风向:${windDir}°(270-360°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
       }
 
-      // 计算最终偏移值
-      // 为了解决未赋值前使用变量的问题，先声明再赋值
+      // 计算空气阻力
+      // 空气阻力公式：F = (1/2) * ρ * v² * Cd * A
+      // ρ：空气密度，v：相对速度，Cd：阻力系数，A：迎风面积
+
+      // 计算X方向的空气阻力
+      const airResistanceX = 0.5 * airDensity * Math.pow(windX / 1000, 2) * airResistanceCoefficient * droneArea;
+      // 计算Y方向的空气阻力
+      const airResistanceY = 0.5 * airDensity * Math.pow(windY / 1000, 2) * airResistanceCoefficient * droneArea;
+
+      // 计算作用在无人机上的力（牛顿）
+      const forceX = airResistanceX;
+      const forceY = airResistanceY;
+
+      // 计算加速度 (a = F/m)
+      const accelerationX = forceX / droneWeight; // 米/秒²
+      const accelerationY = forceY / droneWeight; // 米/秒²
+
+      // 计算最终偏移值（考虑空气阻力影响）
+      // 位移公式：s = v₀t + (1/2)at²
+      // 其中 v₀ 是初始速度（风速），t 是时间，a 是加速度
       let calculatedXOffset = 0;
       let calculatedYOffset = 0;
       let calculatedZOffset = 0;
 
-      calculatedXOffset = Math.abs(targetPosX - posX) + windX * (posZ / landSpeed);
-      calculatedYOffset = Math.abs(targetPosY - posY) + windY * (posZ / landSpeed);
+      // 将所有单位转换为毫米
+      calculatedXOffset =
+        posX -
+        targetPosX +
+        // (windX * landtime) + // 风力造成的位移
+        0.5 * accelerationX * 1000 * Math.pow(landtime, 2); // 空气阻力造成的位移（转换为毫米）
+
+      calculatedYOffset =
+        posY -
+        targetPosY +
+        // (windY * landtime) + // 风力造成的位移
+        0.5 * accelerationY * 1000 * Math.pow(landtime, 2); // 空气阻力造成的位移（转换为毫米）
+
       calculatedZOffset = Math.abs(posZ - targetPosZ);
+
+      console.log(`空气阻力加速度: X=${accelerationX.toFixed(4)}m/s², Y=${accelerationY.toFixed(4)}m/s²`);
+      console.log(`降落时间: ${landtime.toFixed(2)}s`);
+      console.log(`最终偏移: X=${calculatedXOffset.toFixed(2)}mm, Y=${calculatedYOffset.toFixed(2)}mm`);
 
       return {
         xOffset: calculatedXOffset,
@@ -217,6 +261,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
 }
 
 .final-result {
@@ -256,5 +301,9 @@ export default defineComponent({
   background: linear-gradient(to bottom, #bfdcf7 40%, #1dc7ed);
   -webkit-background-clip: text;
   color: transparent;
+}
+
+.target-view {
+  margin-top: 20px;
 }
 </style>

@@ -5,6 +5,7 @@ import com.chenhy.domain.WeatherData;
 import com.chenhy.repository.StaticsRepository;
 import com.chenhy.repository.WeatherDataRepository;
 import java.util.Optional;
+import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,11 +140,14 @@ public class StaticsService {
 
             // 设置其他字段，这里假设其他字段可以为null或默认值
             newStatics.setTime(java.time.Instant.now());
-            newStatics.setPosX(0L);
-            newStatics.setPosY(0L);
-            newStatics.setPosZ(0L);
-
-            // 保存新的Statics记录
+            //            newStatics.setPosX(0L);
+            //            newStatics.setPosY(0L);
+            //            newStatics.setPosZ(0L);
+            Random rand = new Random();
+            newStatics.setPosX(rand.nextLong(20000) - 10000);
+            newStatics.setPosY(rand.nextLong(20000) - 10000);
+            newStatics.setPosZ(rand.nextLong(9999) + 1);
+            // 保存新的Statics记录git
             Statics savedStatics = save(newStatics);
             LOG.debug("New Statics record added with ID: {}", savedStatics.getId());
         } else {

@@ -4,15 +4,15 @@
 
 # 2025.3 I
 
-## :pushpin: **位置算法**
+## :pushpin: **算法初步实现**
 
-**（python获取无人机XYZ坐标并算法计算出偏移再传输给springboot,通过service层修改数据库）**
+**（python 获取无人机XYZ坐标并算法计算出偏移再传输给 springboot,通过 service 层修改数据库）**
 
-**生成实体（entity）：数据-附带Service类**​​
+**生成实体（entity）：数据-附带 Service类**​​
 
 <img src="images/202531.png" alt="20250313134007" style="zoom:50%;" />
 
-**x轴坐标posX，y轴坐标posY，z轴坐标posZ。**
+**x轴坐标 posX，y轴坐标 posY，z轴坐标 posZ。**
 
 **设定出参考点的坐标，固定无人机的飞行速度或通过摄像机确定（复杂），**
 
@@ -50,7 +50,7 @@
 
 ### **Python** :link:
 
-**可以直接在Python中实现算法，也可以传入Springboot后。**
+**可以直接在 Python 中实现算法，也可以传入 Springboot 后。**
 
 ```python
 import requests
@@ -142,31 +142,31 @@ public class DronePositionResource {
 
 **查阅了一些网页，要获取物体三维坐标的方法有很多，但是双目，三目摄像头获取到的坐标都不够准确。**
 
-**单目+传感器其实是最佳实现方法，不过数据传输速度过慢也是问题，这时我就看到了深度相机，可以使用ai模型**。
+**单目 + 传感器其实是最佳实现方法，不过数据传输速度过慢也是问题，这时我就看到了深度相机，可以使用ai模型**。
 
-**资金充足的情况下想要使用的是Inter的D435i深度相机，那资金不充足怎么办呢**。
+**资金充足的情况下想要使用的是 Inter 的 D435i 深度相机，那资金不充足怎么办呢**。
 
 # 2025.3 II
 
 ## :ballot_box_with_check: 项目重启
 
-**做完公司项目之后回来看发现vite报错。**
+**做完公司项目之后回来看发现 vite 报错。**
 
 **<img src="images/202534.png" alt="20250313134007" style="zoom:108%;" />**
 
-**vite是因为nodejs版本被我回退了，用nvm切换到新版本之后把package.json和node_moudles删除后重新安装依赖就没问题了。**
+**vite 是因为 nodejs 版本被我回退了，用 nvm 切换到新版本之后把 package.json 和 node_moudles 删除后重新安装依赖就没问题了。**
 
-**然后在导入JDL实体的时候jhipster挂了，**
+**然后在导入 JDL 实体的时候 jhipster 挂了，**
 
-**jhipster为什么会失踪，原来是我重装node的时候把所有的包都清理了。**
+**jhipster 为什么会失踪，原来是我重装 node 的时候把所有的包都清理了。**
 
 <img src="images/202533.png" alt="20250313134007" style="zoom:90%;" />
 
-**成功导入JDL实体。**
+**成功导入 JDL 实体。**
 
 <img src="images/202535.png" alt="20250313134007" style="zoom:95%;" />
 
-**启动Springboot，报错端口被占用。**
+**启动 Springboot，报错端口被占用。**
 
 <img src="images/202536.png" alt="20250313134007" style="zoom: 67%;" />
 
@@ -174,11 +174,11 @@ public class DronePositionResource {
 
 <img src="images/202537.png" alt="20250313134007" style="zoom: 67%;" />
 
-**Springboot启动成功 :v:**
+**Springboot 启动成功 :v:**
 
 <img src="images/202538.png" alt="20250313134007" style="zoom: 67%;" />
 
-**在Springboot配置文件application-dev.yml中配置mySql数据库，关闭liquibase伪数据生成。**:paperclip:
+**在 Springboot 配置文件 application-dev.yml 中配置 mySql 数据库，关闭 liquibase 伪数据生成。**:paperclip:
 
 <img src="images/202539.png" alt="20250313134007" style="zoom: 67%;" />
 
@@ -198,7 +198,7 @@ public class DronePositionResource {
 
 <img src="images/2025310.png" alt="20250313134007" style="zoom: 67%;" />
 
-**在i18n配置中文：**
+**在 i18n 配置中文：**
 
 ```json
 {
@@ -238,7 +238,7 @@ public class DronePositionResource {
 
 ### SpringBoot :link:
 
-**用Pageable实现倒序排列数据：**
+**用 Pageable 实现倒序排列数据：**
 
 ```java
 //Service类
@@ -250,7 +250,7 @@ public Optional<Statics> findOne(Long id) {
 
 ```
 
-**Resource类调用并用getContent()传出排序后的List：**
+**Resource 类调用并用 getContent() 传出排序后的 List：**
 
 ```java
 @GetMapping("")
@@ -273,35 +273,35 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 # 2025.3 III
 
-## :sun_with_face: 气象API
+## :sun_with_face: 获取气象API
 
-**由于风速计部署及数据传输过于复杂等原因，改用从API获取数据并传输到Spring Boot中。**
+**由于风速计部署及数据传输过于复杂等原因，改用从 API 获取数据并传输到 Spring Boot中。**
 
-:o:**使用API获取数据的优缺点：**
+:o:**使用 API 获取数据的优缺点：**
 
-**API提供了标准化的数据接口，可以直接通过HTTP请求获取数据，无需复杂的硬件设备和现场部署。**
+**API 提供了标准化的数据接口，可以直接通过 HTTP请求获取数据，无需复杂的硬件设备和现场部署。**
 
-**数据通常以结构化的格式（如JSON或XML）返回，易于解析和处理。**
+**数据通常以结构化的格式（如 JSON 或 XML）返回，易于解析和处理。**
 
-**并且许多气象API提供实时数据或高频率更新的数据，能够满足对实时气象信息的需求。**
+**并且许多气象 API 提供实时数据或高频率更新的数据，能够满足对实时气象信息的需求。**
 
-**不过API提供商可能会调整数据格式或接口，需要及时更新代码。而风力计可以实时测量当前的风速和风向，数据获取几乎无延迟。**
+**不过 API 提供商可能会调整数据格式或接口，需要及时更新代码。而风力计可以实时测量当前的风速和风向，数据获取几乎无延迟。**
 
-**然后是最恐怖的一点：主流气象API每个月都要支付四位数以上的价格。**
+**然后是最恐怖的一点：主流气象 API 每个月都要支付四位数以上的价格。**
 
-**因此也固定算法实现的位置为Springboot的Service类，而不再是使用python，python仅提供无人机的三维位置数据。**
+**因此也固定算法实现的位置为 Springboot 的 Service 类，而不再是使用 python，python 仅提供无人机的三维位置数据。**
 
 <img src="images/2025316.png" alt="20250313134007" style="zoom: 60%;" />
 
 :warning:<font color = red>**若能直接传输到springboot中，python也将停用，但目前仍未选择摄像头。**</font>
 
-**这里选用的是心知天气的API，每五分钟可传输一次数据，足以满足我们的需求。**
+**这里选用的是心知天气的 API，每五分钟可传输一次数据，足以满足我们的需求。**
 
 <img src="images/2025314.png" alt="20250313134007" style="zoom: 100%;" />
 
 **由上图可见接口传输过来的我们所需要的数据为风速`wind_speed`和风向角度`wind_direction_degree`，**
 
-**其中风向角度的数据为整数，那么应该就是0~360的度数，以此对算法度数计算进行更新。**
+**其中风向角度的数据为整数，那么应该就是 0~360 的度数，以此对算法度数计算进行更新。**
 
 **具体分析如下：**
 
@@ -323,7 +323,7 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 
 ## :sunflower: 和风天气API
 
-**今天查阅的时候发现了另一款有360度风向以及每小时风速的免费API：和风天气，每日1000次的访问量已经足够。**
+**今天查阅的时候发现了另一款有360度风向以及每小时风速的免费 API：和风天气，每日1000次的访问量已经足够。**
 
 <img src="images/2025315.png" alt="20250313134007" style="zoom: 90%;" />
 
@@ -332,11 +332,11 @@ public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false
 - **`now.wind360` [风向](https://dev.qweather.com/docs/resource/wind-info/#wind-direction)，360角度**
 - **`now.windSpeed` [风速](https://dev.qweather.com/docs/resource/wind-info/#wind-speed)，公里/小时**
 
-**API格式：`devapi.qweather.com/v7/weather/now?location=&key=`**
+**API 格式：`devapi.qweather.com/v7/weather/now?location=&key=`**
 
-**生成的APIKey：`ec15c8e809f54b009f3ba76ab88c542c`**
+**生成的 APIKey：`ec15c8e809f54b009f3ba76ab88c542c`**
 
-**需要使用的城市id：**
+**需要使用的城市 id：**
 
 **上海市**
 
@@ -378,7 +378,7 @@ public class WeatherData implements Serializable {
 
 ```
 
-**config类中定义restTemplate：**
+**config 类中定义 restTemplate：**
 
 ```java
 @Configuration
@@ -399,7 +399,7 @@ public class RestTemplateConfig {
 
 ```
 
-**创建service类：**
+**创建 service 类：**
 
 ```java
 package com.chenhy.service;
@@ -455,7 +455,7 @@ public class HeWeatherService {
 
 ```
 
-**创建repository类：**
+**创建 repository 类：**
 
 ```java
 package com.chenhy.repository;
@@ -472,7 +472,7 @@ public interface WeatherDataRepository extends JpaRepository<WeatherData, Long> 
 
 ```
 
-**根据返回的 JSON格式创建DTO：**
+**根据返回的 JSON 格式创建 DTO：**
 
 ```java
 package com.chenhy.service.dto;
@@ -558,9 +558,9 @@ public class WeatherResource {
 
 ## :package: ​JSON解包
 
-**测试昨天写的API接口，一直报错返回的 JSON含有非法字符，对非法字符处理后仍然无法正常接收到 JSON。**
+**测试昨天写的 API 接口，一直报错返回的 JSON 含有非法字符，对非法字符处理后仍然无法正常接收到 JSON。**
 
-**今天回去和风天气的开放文档又看了看，发现其API返回的数据均使用了Gzip压缩，那么接下来对Gzip进行处理。**
+**今天回去和风天气的开放文档又看了看，发现其API返回的数据均使用了 Gzip 压缩，那么接下来对 Gzip 进行处理。**
 
 ### SpringBoot :link:
 
@@ -660,13 +660,13 @@ public class RestTemplateConfig {
 
 # 2025.3 VI
 
-## :hourglass: ​定时更新
+## :hourglass: ​添加定时更新功能
 
-**添加功能（逻辑）：每十秒更新一条Statics，并调用weatherDataRepository的**
+**添加功能（逻辑）：每十秒更新一条 Statics，并调用 weatherDataRepository 的**
 
-**findFirstByLocationIdOrderByObservationTimeDesc(locationId)方法，**
+**findFirstByLocationIdOrderByObservationTimeDesc(locationId) 方法，**
 
-**将数据表weather_data最新一条数据的风速和风向存入该条新数据中。**
+**将数据表 weather_data 最新一条数据的风速和风向存入该条新数据中。**
 
 ### SpringBoot :link:
 
@@ -723,7 +723,7 @@ public void addNewStatics() {
 
 <img src="images/2025320.png" alt="20250313134007" style="zoom: 90%;" />
 
-**接下来需要的是获取XYZ坐标并存入另一个表PosData中，再调用赋予给这条新数据的XYZ字段上。**
+**接下来需要的是获取XYZ坐标并存入另一个表 PosData 中，再调用赋予给这条新数据的XYZ字段上。**
 
 **虽然说是风向360，但是最少也有45°的差距......**
 
@@ -735,7 +735,7 @@ public void addNewStatics() {
 
 # 2025.4 I
 
-## :bookmark_tabs: 前端更新
+## :bookmark_tabs: 前端更新 I
 
 **之前那个首页确实有点丑了，新的设计方案大概就是在首页放置几个模块，模块内存放icon和数据。**
 
@@ -855,7 +855,7 @@ export default defineComponent({
 
 <img src="演示视频/v202541.gif" alt="20250313134007" style="zoom: 260%;" />
 
-**接下来美化一下首页：头图+标题，左右两侧的半透明Sidebar。**
+**接下来美化一下首页：头图+标题，左右两侧的半透明 Sidebar。**
 
 **导入滚动栏，用于展示当前无人机的位置数据以及当前风速风向。**
 
@@ -933,7 +933,7 @@ onMounted(async () => {
 
 # 2025.4 II
 
-## :bookmark: 前端更新
+## :bookmark: 前端更新 II
 
 **这几天公司的任务稍微有点多，不过都做好了，现在让我们继续来更新前端。**
 
@@ -964,7 +964,7 @@ onMounted(async () => {
 
 ## :chart_with_upwards_trend: 算法重写
 
-**目前不再打算使用价格高昂的Intel D400家族深度相机，而是使用四目普通摄像头识别。**
+**目前不再打算使用价格高昂的 Intel D400 家族深度相机，而是使用四目普通摄像头识别。**
 
 <img src="images/2025405.png" alt="20250313134007" style="zoom: 40%;" />
 
@@ -972,7 +972,7 @@ onMounted(async () => {
 
 **先在前端添加一个录入框，输入测试用的无人机三维坐标XYZ（单位：米）**
 
-**发送到后端存入statics实体交给算法处理。**
+**发送到后端存入 statics 实体交给算法处理。**
 
 <img src="images/2025406.png" alt="20250313134007" style="zoom:100%;" />
 
@@ -980,15 +980,15 @@ onMounted(async () => {
 
 <img src="images/2025407.png" alt="20250313134007" style="zoom:160%;" />
 
-**考虑到偏移坐标不需要存储到数据库，我们直接在TypeScript中完成简单算法，这样可以直接调用所有计算所需的参数。**
+**考虑到偏移坐标不需要存储到数据库，我直接在 TypeScript 中完成初步算法，这样可以直接调用所有计算所需的参数。**
 
-**由于目前单位仍未确定，先假定写入的测试数据单位为坐标格，转化关系为1坐标格1毫米。**
+**由于目前单位仍未确定，先假定写入的测试数据单位为坐标格，转化关系为`1坐标格 = 1毫米`。**
 
-**以当前参数（1000，-1000，1000，14，225）为例：**
+**以当前参数`（1000，-1000，1000，14，225）`为例：**
 
 **步骤：**
 
-**1.风向筛子**
+**风向筛子**
 
 **将风向模拟为一个坐标轴，因为各个象限计算方式不同，所以先初步将风向筛为四种。**
 
@@ -1000,11 +1000,11 @@ onMounted(async () => {
 
 ### TypeScript :link:
 
-**countData为计算最终偏移的函数，参数为XYZ坐标及风速风向。**
+**countData 为计算最终偏移的函数，参数为XYZ坐标及风速风向。**
 
 **Z轴坐标为计算降落时间的参数，Z轴距离除以降落速度即为降落时间。**
 
-**这里先把降落速度设为定值（1000毫米每秒）**
+**这里先视环境为理想情况（即不考虑物体质量），并把降落速度设为定值：`1000毫米每秒`**
 
 ```typescript
 const countData = (posX: number, posY: number, posZ: number, windSpeed: number, windDirection: number | string): FinalData => {
@@ -1074,7 +1074,7 @@ const countData = (posX: number, posY: number, posZ: number, windSpeed: number, 
 };
 ```
 
-**注：该组件查找的是最新的一条Z轴（posZ）不为0的数据进行计算。**
+**注：该组件查找的是最新的一条Z轴（posZ）不为 0 的数据进行计算。**
 
 **并且计算结果仅为风使其偏移的距离，后续需要加上降落点位置的坐标，**
 
@@ -1094,7 +1094,7 @@ calculatedYOffset = Math.abs(targetPosY - posY) + windY * (posZ/landSpeed);
 calculatedZoffset = Math.abs(posZ - targetPosZ);
 ```
 
-**在这里我先令目标降落点坐标为(0,0,0)**
+**在这里我先令目标降落点坐标为 `(0,0,0)`**
 
 **效果：**
 
@@ -1102,21 +1102,346 @@ calculatedZoffset = Math.abs(posZ - targetPosZ);
 
 # 2025.4 IV
 
-## :electric_plug:三维坐标获取
+## :electric_plug: 三维坐标获取
 
-**今天网上冲浪的时候看到闲鱼上奥比中光的Astra Pro深度摄像头只卖85一个，赶紧入手了一个。**
+**今天网上冲浪的时候看到闲鱼上奥比中光的 Astra Pro 深度摄像头只卖85一个，赶紧入手了一个。**
 
 **等过几天到货了试试基本功能没问题的话就可以拿来测三维坐标了。**
 
+## :small_red_triangle: ​算法变动
+
+**这次计划在屏幕中间添加一个标靶，更直观地监控偏移点距目标点在二维坐标的位置。**
+
+**之前使用的绝对值来计算基础距离是错误的，因为此时的 pos 已经带了正负号。**
+
+**这里直接用当前 pos 减去目标 pos ，用于后续点的定位。**
+
+**（得到的是带正负号的XY坐标，而Z坐标不可能为负也不能为负，先使用绝对值）**
+
+### TypeScript :link:
+
+```typescript
+calculatedXOffset = Math.abs(targetPosX - posX) + windX * (posZ / landSpeed);
+calculatedYOffset = Math.abs(targetPosY - posY) + windY * (posZ / landSpeed);
+calculatedZoffset = Math.abs(posZ - targetPosZ);
+```
+
+**修改为：**
+
+```typescript
+calculatedXOffset = posX - targetPosX + windX * (posZ / landSpeed);
+calculatedYOffset = posY - targetPosY + windY * (posZ / landSpeed);
+calculatedZoffset = Math.abs(posZ - targetPosZ);
+```
+
+## :repeat_one: 测试流
+
+**接下来在 StaticsService 类中添加测试数据，将默认的值0变更为随机数，**
+
+**XY坐标范围在`-10000到10000`之间，Z坐标则是`1至10000`。**
+
+### SpringBoot :link:
+
+```java
+// newStatics.setPosX(0L);
+// newStatics.setPosY(0L);
+// newStatics.setPosZ(0L);
+Random rand = new Random();
+newStatics.setPosX(rand.nextLong(20000) - 10000);
+newStatics.setPosY(rand.nextLong(20000) - 10000);
+newStatics.setPosZ(rand.nextLong(9999) + 1);
+```
+
+**这里填入的地方是定时生成新记录部分，之后会变更为获取到坐标再更新。**
+
+**测试流写入成功，并且会计算结果无误：**
+
+<img src="images/2025408.png" alt="20250313134007" style="zoom:100%;" />
+
+**10000 的话换算后也就是 10米，那么制作的标靶的半径即为 10米，可以显示`2 * 2`范围内的点。**
+
+**不过摄像头没有这么大的视野，后面根据视野的大小修改。**
+
+## :bow_and_arrow: ​前端更新 III
+
+**新增：实时降落点二维直观视图**。
+
+**算是前端比较复杂的一个组件了。**
+
+**使用靶子图片作为背景，建立了一个 `-10000 到 10000` 的坐标系并添加坐标轴。**
+
+### Html​ :link:
+
+```html
+<div
+  class="offset-point"
+  :style="{
+          left: `${50 + (xOffset / 20000 * 90)}%`,
+          top: `${50 - (yOffset / 20000 * 70)}%`
+        }"
+>
+  <div class="point-label">({{ xOffset.toFixed(2) }}, {{ yOffset.toFixed(2) }})</div>
+</div>
+```
+
+**通过 finalData 组件 props 传参，传递的参数为 xOffset 和 yOffset，**
+
+**根据 xOffset 和 yOffset 实现了动态显示点的功能，红点会根据 xOffset 和 yOffset 的值在坐标系中实时移动。**
+
+**其实前端大部分代码都在写样式，但既然是设计，总不能搞得乱七八糟吧。**
+
+**效果：**
+
+<img src="演示视频/v2025406.gif" alt="20250313134007" style="zoom: 260%;" />
+
+**单位换算也需要注意一下，这里修改一下前面算法部分的风速：**
+
+### TypeScript :link:
+
+**获取到的风速单位为千米每小时，转换为毫米每秒：**
+
+**转换公式为：`1 km/h = 277.778 mm/s`**
+
+```typescript
+const countData = (posX: number, posY: number, posZ: number, windSpeed: number, windDirection: number | string): FinalData => {
+  // 转换风向360为数字
+  const windDir = typeof windDirection === 'string' ? parseFloat(windDirection) : windDirection;
+
+  // 根据风向角度计算x和y方向分量
+  let windX = 0;
+  let windY = 0;
+
+  // 将风速从千米每小时转换为毫米每秒
+  const windSpeedInMmPerSec = windSpeed * 277.778;
+
+  // 降落速度先设为定值：1000毫米每秒
+  let landSpeed = 1000;
+
+  let targetPosX;
+  let targetPosY;
+  let targetPosZ;
+
+  targetPosX = 0;
+  targetPosY = 0;
+  targetPosZ = 0;
+
+  // 将角度转换为弧度进行计算
+  const degToRad = (degrees: number) => (degrees * Math.PI) / 180;
+  const theta = degToRad(windDir);
+
+  // 根据风向范围计算分量
+  if (windDir >= 0 && windDir < 90) {
+    // 第一象限: 0-90度
+    // x方向风速 = v * sin(θ)
+    // y方向风速 = v * cos(θ)
+    windX = windSpeedInMmPerSec * Math.sin(theta);
+    windY = windSpeedInMmPerSec * Math.cos(theta);
+    console.log(`风向:${windDir}°(0-90°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  } else if (windDir >= 90 && windDir < 180) {
+    // 第二象限: 90-180度
+    // x方向风速 = v * cos(θ-90°)
+    // y方向风速 = -v * sin(θ-90°)
+    const adjustedTheta = degToRad(windDir - 90);
+    windX = windSpeedInMmPerSec * Math.cos(adjustedTheta);
+    windY = -windSpeedInMmPerSec * Math.sin(adjustedTheta);
+    console.log(`风向:${windDir}°(90-180°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  } else if (windDir >= 180 && windDir < 270) {
+    // 第三象限: 180-270度
+    // x方向风速 = -v * sin(θ-180°)
+    // y方向风速 = -v * cos(θ-180°)
+    const adjustedTheta = degToRad(windDir - 180);
+    windX = -windSpeedInMmPerSec * Math.sin(adjustedTheta);
+    windY = -windSpeedInMmPerSec * Math.cos(adjustedTheta);
+    console.log(`风向:${windDir}°(180-270°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  } else if (windDir >= 270 && windDir <= 360) {
+    // 第四象限: 270-360度
+    // x方向风速 = -v * cos(θ-270°)
+    // y方向风速 = v * sin(θ-270°)
+    const adjustedTheta = degToRad(windDir - 270);
+    windX = -windSpeedInMmPerSec * Math.cos(adjustedTheta);
+    windY = windSpeedInMmPerSec * Math.sin(adjustedTheta);
+    console.log(`风向:${windDir}°(270-360°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  }
+
+  // 计算最终偏移值
+  let calculatedXOffset = 0;
+  let calculatedYOffset = 0;
+  let calculatedZOffset = 0;
+
+  calculatedXOffset = posX - targetPosX + windX * (posZ / landSpeed);
+  calculatedYOffset = posY - targetPosY + windY * (posZ / landSpeed);
+  calculatedZOffset = Math.abs(posZ - targetPosZ);
+
+  return {
+    xOffset: calculatedXOffset,
+    yOffset: calculatedYOffset,
+    zOffset: calculatedZOffset,
+  };
+};
+```
+
+## :white_check_mark: ​详细算法实现 I
+
+**转换后发现偏移量变化相当大，这是因为在理想情况下风速能轻松移动物体而不考虑质量，抗风能力等因素。**
+
+**此前已经获得了最重要的参数：风速，接下来让我们导入公式：**
+
+$$
+F=1/2*ρAV^2*Cd
+$$
+
+**其中 F 表示风力的大小，ρ 为空气密度，A 为物体的投影面积，V 为风速，Cd 为物体的阻力系数。**
+
+**首先是空气密度，不同温度下的空气密度不同。**
+
+**而我们已经从气象 API 中得到了温度的数值，接下来只需要获取不同温度下空气密度的值即可，这里先取1.225。**
+
+**参考空气密度温度对照表(部分)：**
+
+<img src="images/空气密度温度对照表.jpg" alt="20250313134007" style="zoom:100%;" />
+
+**然后，物体的投影面积（受力面积）:**
+
+**将 450机架的无人机视为 `12 cm ∗ 8 cm` 的矩形，则 `S = 0.096 ≈ 0.1 ㎡`**
+
+**更加精确的数值或许可以通过深度相机获得。**
+
+**至于阻力系数，与物体表面形状有关，现代汽车一般为 `0.28 ~ 0.4`，四旋翼无人机，气动外形一般，取 `Cd = 0.47`**
+
+### TypeScript :link:
+
+**完善后的countData函数：**
+
+```typescript
+const countData = (posX: number, posY: number, posZ: number, windSpeed: number, windDirection: number | string): FinalData => {
+  // 转换风向360为数字
+  const windDir = typeof windDirection === 'string' ? parseFloat(windDirection) : windDirection;
+
+  // 根据风向角度计算x和y方向分量
+  let windX = 0;
+  let windY = 0;
+
+  // 将风速从千米每小时转换为毫米每秒
+  const windSpeedInMmPerSec = windSpeed * 277.778;
+
+  // 降落速度40m以下均为3000毫米每秒
+  let landSpeed = 3000;
+
+  // 降落过程时间posZ/landSpeed
+  let landtime = posZ / landSpeed;
+
+  // 无人机重量，先取20kg
+  let droneWeight = 20;
+
+  // 无人机受力面积，取0.1平方米
+  let droneArea = 0.1;
+
+  // 空气密度，取1.225千克/立方米
+  let airDensity = 1.225;
+
+  // 空气阻力系数，取0.47
+  let airResistanceCoefficient = 0.47;
+
+  let targetPosX = 0;
+  let targetPosY = 0;
+  let targetPosZ = 0;
+
+  // 将角度转换为弧度进行计算
+  const degToRad = (degrees: number) => (degrees * Math.PI) / 180;
+  const theta = degToRad(windDir);
+
+  // 根据风向范围计算分量
+  if (windDir >= 0 && windDir < 90) {
+    // 第一象限: 0-90度
+    windX = windSpeedInMmPerSec * Math.sin(theta);
+    windY = windSpeedInMmPerSec * Math.cos(theta);
+    console.log(`风向:${windDir}°(0-90°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  } else if (windDir >= 90 && windDir < 180) {
+    // 第二象限: 90-180度
+    const adjustedTheta = degToRad(windDir - 90);
+    windX = windSpeedInMmPerSec * Math.cos(adjustedTheta);
+    windY = -windSpeedInMmPerSec * Math.sin(adjustedTheta);
+    console.log(`风向:${windDir}°(90-180°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  } else if (windDir >= 180 && windDir < 270) {
+    // 第三象限: 180-270度
+    const adjustedTheta = degToRad(windDir - 180);
+    windX = -windSpeedInMmPerSec * Math.sin(adjustedTheta);
+    windY = -windSpeedInMmPerSec * Math.cos(adjustedTheta);
+    console.log(`风向:${windDir}°(180-270°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  } else if (windDir >= 270 && windDir <= 360) {
+    // 第四象限: 270-360度
+    const adjustedTheta = degToRad(windDir - 270);
+    windX = -windSpeedInMmPerSec * Math.cos(adjustedTheta);
+    windY = windSpeedInMmPerSec * Math.sin(adjustedTheta);
+    console.log(`风向:${windDir}°(270-360°), X向风速:${windX.toFixed(2)}mm/s, Y向风速:${windY.toFixed(2)}mm/s`);
+  }
+
+  // 计算空气阻力
+  // 空气阻力公式：F = (1/2) * ρ * v² * Cd * A
+  // ρ：空气密度，v：相对速度，Cd：阻力系数，A：迎风面积
+
+  // 计算X方向的空气阻力
+  const airResistanceX = 0.5 * airDensity * Math.pow(windX / 1000, 2) * airResistanceCoefficient * droneArea;
+  // 计算Y方向的空气阻力
+  const airResistanceY = 0.5 * airDensity * Math.pow(windY / 1000, 2) * airResistanceCoefficient * droneArea;
+
+  // 计算作用在无人机上的力（牛顿）
+  const forceX = airResistanceX;
+  const forceY = airResistanceY;
+
+  // 计算加速度 (a = F/m)
+  const accelerationX = forceX / droneWeight; // 米/秒²
+  const accelerationY = forceY / droneWeight; // 米/秒²
+
+  // 计算最终偏移值（考虑空气阻力影响）
+  // 位移公式：s = v₀t + (1/2)at²
+  // 其中 v₀ 是初始速度（风速），t 是时间，a 是加速度
+  let calculatedXOffset = 0;
+  let calculatedYOffset = 0;
+  let calculatedZOffset = 0;
+
+  // 将所有单位转换为毫米
+  calculatedXOffset =
+    posX -
+    targetPosX +
+    // (windX * landtime) + // 风力造成的位移
+    0.5 * accelerationX * 1000 * Math.pow(landtime, 2); // 空气阻力造成的位移（转换为毫米）
+
+  calculatedYOffset =
+    posY -
+    targetPosY +
+    // (windY * landtime) + // 风力造成的位移
+    0.5 * accelerationY * 1000 * Math.pow(landtime, 2); // 空气阻力造成的位移（转换为毫米）
+
+  calculatedZOffset = Math.abs(posZ - targetPosZ);
+
+  console.log(`空气阻力加速度: X=${accelerationX.toFixed(4)}m/s², Y=${accelerationY.toFixed(4)}m/s²`);
+  console.log(`降落时间: ${landtime.toFixed(2)}s`);
+  console.log(`最终偏移: X=${calculatedXOffset.toFixed(2)}mm, Y=${calculatedYOffset.toFixed(2)}mm`);
+
+  return {
+    xOffset: calculatedXOffset,
+    yOffset: calculatedYOffset,
+    zOffset: calculatedZOffset,
+  };
+};
+```
+
+**更新了部分样式，并修复了滚动栏内容溢出导致的错位问题：**
+
+<img src="images/2025409.png" alt="20250313134007" style="zoom:50%;" />
+
+**接下来只需要将摄像头获取到的三维坐标写入 newStatics，并接通监控画面就大功告成了。**
+
 # :computer: ​编译说明
 
-**node版本：^22**
+**node版本：`^22`**
 
-**jdk：21/23**
+**jdk：`21/23`**
 
-**前端运行：npm start**
+**前端运行：`npm start`**
 
-**端口：9000**
+**端口：`9000`**
 
 # :open_file_folder: ​项目结构
 
