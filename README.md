@@ -1100,6 +1100,14 @@ calculatedZoffset = Math.abs(posZ - targetPosZ);
 
 <img src="演示视频/v2025405.gif" alt="20250313134007" style="zoom: 260%;" />
 
+# 2025.4 IV
+
+## :electric_plug:三维坐标获取
+
+**今天网上冲浪的时候看到闲鱼上奥比中光的Astra Pro深度摄像头只卖85一个，感觉入手了一个。**
+
+**等过几天到货了试试基本功能没问题的话就可以拿来测三维坐标了。**
+
 # :computer: ​编译说明
 
 **node版本：^22**
@@ -1130,7 +1138,7 @@ calculatedZoffset = Math.abs(posZ - targetPosZ);
 
 **前端 (src/main/webapp/app/):**
 
-- **core/: 核心应用组件，如主页 (home.vue)、导航栏、登录页面等。**
+- **core/: 核心应用组件，主页 (home.vue)、导航栏、登录页面等。**
 
 - **entities/: 与 JHipster 生成的实体相关的组件（例如 statics/statics.vue, statics.component.ts）。**
 
@@ -1150,7 +1158,7 @@ calculatedZoffset = Math.abs(posZ - targetPosZ);
 
 - **App.vue: Vue 应用的根组件。**
 
-- **decoration/ (自定义): 添加的装饰性或特定功能的 UI 组件（headerImage.vue, getwinds.vue, finalData.vue 等）。**
+- **decoration/: 添加的装饰性或特定功能的 UI 组件（headerImage.vue, getwinds.vue, finalData.vue 等）。**
 
 **配置 (src/main/resources/)**
 
