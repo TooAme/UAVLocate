@@ -2,6 +2,7 @@ import { createRouter as createVueRouter, createWebHistory } from 'vue-router';
 
 const Home = () => import('@/core/home/home.vue');
 const Error = () => import('@/core/error/error.vue');
+const ReadmeView = () => import('@/core/readme/readme.vue');
 import account from '@/router/account';
 import admin from '@/router/admin';
 import entities from '@/router/entities';
@@ -34,10 +35,19 @@ export const createRouter = () =>
         name: 'Weather',
         component: Weather,
       },
+      {
+        path: '/README.html',
+        name: 'Readme',
+        component: ReadmeView,
+      },
       ...account,
       ...admin,
       entities,
       ...pages,
+      {
+        path: '/:pathMatch(.*)*',
+        redirect: '/not-found',
+      },
     ],
   });
 

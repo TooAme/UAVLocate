@@ -93,6 +93,7 @@
     "deepmerge": "4.3.1",
     "element-plus": "^2.9.7",
     "jhipster": "^0.0.2",
+    "marked": "^15.0.8",
     "mitt": "^3.0.1",
     "pinia": "2.3.1",
     "vue": "3.5.13",

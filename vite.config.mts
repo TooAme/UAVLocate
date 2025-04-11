@@ -61,6 +61,7 @@ const config = defineConfig({
       ]),
     ),
   },
+  assetsInclude: ['**/*.html'],
 });
 
 // jhipster-needle-add-vite-config - JHipster will add custom config

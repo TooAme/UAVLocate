@@ -138,7 +138,7 @@
     ========================================================================== */
 .navbar-version {
   font-size: 0.65em;
-  font-family: '幼圆' !important;
+  font-family: 'Yahei' !important;
   font-weight: bolder;
   color: rgba(255, 255, 255, 0.833);
 }

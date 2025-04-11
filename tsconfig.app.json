@@ -8,6 +8,9 @@
     "outDir": "target/out-tsc/dist",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "module": "esnext",
+    "moduleResolution": "node",
+    "types": ["vite/client"]
   }
 }

@@ -1,6 +1,6 @@
 # UAVLocate
 
-![20250313134007](images/20250313134007.png)
+<img src="images/20250313134007.png" alt="20250313134007" />
 
 # 2025.3 I
 
@@ -1432,6 +1432,77 @@ const countData = (posX: number, posY: number, posZ: number, windSpeed: number, 
 <img src="images/2025409.png" alt="20250313134007" style="zoom:50%;" />
 
 **接下来只需要将摄像头获取到的三维坐标写入 newStatics，并接通监控画面就大功告成了。**
+
+# 2025.4 V
+
+## :diamond_shape_with_a_dot_inside: ​前端更新 IV
+
+**添加了日志查看链接，新增路由readme。**
+
+<img src="images/2025410.png" alt="20250313134007" style="zoom:80%;" />
+
+**由于直接使用vite读取文件会改变相对路径，导致readme中的图片资源无法被找到，**
+
+**解决方法为将相对路径变为绝对路径，但是也会使本地readme文件无法加载出图片。**
+
+**于是我们调用​github仓库中的readme文件，并将相对路径设为github仓库下的绝对路径，问题解决。​**
+
+**现在可以在点击链接后打开日志页面。**
+
+### TypeScript :link:
+
+```typescript
+import { defineComponent, ref, computed, onMounted } from 'vue';
+
+export default defineComponent({
+  name: 'ReadmeView',
+  setup() {
+    const content = ref('');
+
+    const processedContent = computed(() => {
+      if (!content.value) return '';
+
+      // 处理图片路径，将相对路径转换为 GitHub 仓库的绝对路径
+      return content.value.replace(/<img[^>]+src="([^"]+)"[^>]*>/g, (match, src) => {
+        // 如果已经是绝对路径，直接返回
+        if (src.startsWith('http')) return match;
+
+        // 将相对路径转换为 GitHub 仓库的绝对路径
+        const baseUrl = 'https://raw.githubusercontent.com/TooAme/UAVLocate/main/';
+        const absoluteSrc = src.startsWith('/') ? src.substring(1) : src;
+        return match.replace(src, `${baseUrl}${absoluteSrc}`);
+      });
+    });
+
+    onMounted(async () => {
+      try {
+        // 使用 GitHub API 获取 README.html 内容
+        const response = await fetch('https://raw.githubusercontent.com/TooAme/UAVLocate/main/README.html');
+        if (response.ok) {
+          content.value = await response.text();
+        } else {
+          throw new Error(`无法加载 README.html: ${response.status}`);
+        }
+      } catch (error: any) {
+        console.error('Failed to load README:', error);
+        content.value = `<div class="error-message">
+          <h2>无法加载更新日志</h2>
+          <p>请检查网络连接或刷新页面重试。</p>
+          <p>错误信息: ${error?.message || '未知错误'}</p>
+          <p>提示：正在尝试从 GitHub 加载 README.html 文件。</p>
+        </div>`;
+      }
+    });
+
+    return {
+      content,
+      processedContent,
+    };
+  },
+});
+```
+
+<img src="images/2025411.png" alt="20250313134007" style="zoom:80%;" />
 
 # :computer: ​编译说明
 

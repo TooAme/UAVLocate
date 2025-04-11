@@ -1,5 +1,8 @@
 <template>
   <div class="home">
+    <div class="text-link">
+      <a href="../../../../../../README.html">更新日志</a>
+    </div>
     <header-image class="header-image" />
     <div class="sidebar left-sidebar">
       <div class="left-sidebar-under"></div>
@@ -49,6 +52,25 @@ export default defineComponent({
 .header-image {
   pointer-events: none;
   z-index: 1000;
+}
+
+.text-link {
+  position: fixed;
+  top: 32px;
+  left: 355px;
+  z-index: 1001;
+  font-size: 10px;
+  color: #002742;
+}
+
+.text-link a {
+  color: #1395c1;
+  text-decoration: none;
+  font-family: '幼圆';
+}
+
+.text-link a:hover {
+  text-decoration: underline;
 }
 
 .winds-position {
