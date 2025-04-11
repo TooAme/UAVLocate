@@ -1,17 +1,19 @@
 <template>
   <div class="readme-container">
-    <div class="markdown-body" v-if="content" v-html="processedContent"></div>
+    <div class="markdown-body" v-if="content" v-html="processedContent" ref="contentRef"></div>
     <div v-else class="loading">加载中...</div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue';
 
 export default defineComponent({
   name: 'ReadmeView',
   setup() {
     const content = ref('');
+    const contentRef = ref<HTMLElement | null>(null);
+    let scrollInterval: number | null = null;
 
     const processedContent = computed(() => {
       if (!content.value) return '';
@@ -28,12 +30,35 @@ export default defineComponent({
       });
     });
 
+    const startAutoScroll = () => {
+      if (scrollInterval) return;
+
+      scrollInterval = window.setInterval(() => {
+        if (contentRef.value) {
+          const currentScroll = contentRef.value.scrollTop;
+          const maxScroll = contentRef.value.scrollHeight - contentRef.value.clientHeight;
+
+          if (currentScroll < maxScroll) {
+            contentRef.value.scrollTop += 5; // 每次滚动1像素
+          } else {
+            // 到达底部时停止滚动
+            if (scrollInterval) {
+              clearInterval(scrollInterval);
+              scrollInterval = null;
+            }
+          }
+        }
+      }, 5); // 每50毫秒滚动一次
+    };
+
     onMounted(async () => {
       try {
         // 使用 GitHub API 获取 README.html 内容
         const response = await fetch('https://raw.githubusercontent.com/TooAme/UAVLocate/main/README.html');
         if (response.ok) {
           content.value = await response.text();
+          // 内容加载完成后开始自动滚动
+          setTimeout(startAutoScroll, 1000);
         } else {
           throw new Error(`无法加载 README.html: ${response.status}`);
         }
@@ -48,9 +73,17 @@ export default defineComponent({
       }
     });
 
+    onUnmounted(() => {
+      if (scrollInterval) {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+      }
+    });
+
     return {
       content,
       processedContent,
+      contentRef,
     };
   },
 });
@@ -60,7 +93,7 @@ export default defineComponent({
 .readme-container {
   width: 100%;
   min-height: 100vh;
-  /* padding: 70px 20px 20px; */
+  padding: 0px 20px 20px;
   box-sizing: border-box;
   background: #ffffff;
   overflow-x: hidden;
@@ -77,6 +110,9 @@ export default defineComponent({
   line-height: 1.6;
   color: #24292e;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .loading {

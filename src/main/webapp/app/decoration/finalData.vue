@@ -231,7 +231,7 @@ export default defineComponent({
     // 组件挂载时开始定时刷新
     onMounted(() => {
       updateData(); // 立即执行一次
-      refreshTimer = window.setInterval(updateData, 500); // 每2秒刷新一次
+      refreshTimer = window.setInterval(updateData, 100); // 每0.1秒刷新一次
     });
 
     // 组件卸载时清除定时器

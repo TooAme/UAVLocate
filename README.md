@@ -50,7 +50,7 @@
 
 ### **Python** :link:
 
-**可以直接在 Python 中实现算法，也可以传入 Springboot 后。**
+**可以直接在 Python 中实现算法，也可以传入 Springboot 后端。**
 
 ```python
 import requests
@@ -1437,15 +1437,15 @@ const countData = (posX: number, posY: number, posZ: number, windSpeed: number, 
 
 ## :diamond_shape_with_a_dot_inside: ​前端更新 IV
 
-**添加了日志查看链接，新增路由readme。**
+**添加了日志查看链接，新增路由 readme。**
 
 <img src="images/2025410.png" alt="20250313134007" style="zoom:80%;" />
 
-**由于直接使用vite读取文件会改变相对路径，导致readme中的图片资源无法被找到，**
+**由于直接使用 vite 读取文件会改变相对路径，导致 readme 中的图片资源无法被找到，**
 
-**解决方法为将相对路径变为绝对路径，但是也会使本地readme文件无法加载出图片。**
+**解决方法为将相对路径变为绝对路径，但是也会使本地 readme 文件无法加载出图片。**
 
-**于是我们调用​github仓库中的readme文件，并将相对路径设为github仓库下的绝对路径，问题解决。​**
+**于是我们调用​ github 仓库中的 readme 文件，并将相对路径设为 github 仓库下的绝对路径，问题解决。​**
 
 **现在可以在点击链接后打开日志页面。**
 
@@ -1502,7 +1502,82 @@ export default defineComponent({
 });
 ```
 
+**并为日志界面添加了自动向下滚动功能：**
+
+```typescript
+const startAutoScroll = () => {
+  if (scrollInterval) return;
+
+  scrollInterval = window.setInterval(() => {
+    if (contentRef.value) {
+      const currentScroll = contentRef.value.scrollTop;
+      const maxScroll = contentRef.value.scrollHeight - contentRef.value.clientHeight;
+
+      if (currentScroll < maxScroll) {
+        contentRef.value.scrollTop += 5; // 每次滚动5像素
+      } else {
+        // 到达底部时停止滚动
+        if (scrollInterval) {
+          clearInterval(scrollInterval);
+          scrollInterval = null;
+        }
+      }
+    }
+  }, 5); // 每5毫秒滚动一次
+};
+```
+
 <img src="images/2025411.png" alt="20250313134007" style="zoom:80%;" />
+
+### CMD :link:
+
+**这之后我对前端大部分组件的 CSS 样式做了 px 到 vw / vh 的转换，存入到新分支中：**
+
+```cmd
+C:\Users\chenhy\Desktop\App\毕业设计\jhi>git stash
+warning: in the working copy of 'src/main/webapp/app/core/home/home.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/core/readme/readme.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/decoration/finalData.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/decoration/monitorWindow.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/decoration/scrollBox.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/decoration/target.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/decoration/testStatics.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/decoration/weatherWindow.vue', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/main/webapp/app/router/index.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tsconfig.app.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'vite.config.mts', LF will be replaced by CRLF the next time Git touches it
+Saved working directory and index state WIP on main: 2435be7 fix
+
+C:\Users\chenhy\Desktop\App\毕业设计\jhi>git checkout -b 百分比CSS样式页面
+Switched to a new branch '百分比CSS样式页面'
+
+C:\Users\chenhy\Desktop\App\毕业设计\jhi>git stash pop
+On branch 百分比CSS样式页面
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   src/main/webapp/app/core/home/home.vue
+        modified:   src/main/webapp/app/decoration/finalData.vue
+        modified:   src/main/webapp/app/decoration/monitorWindow.vue
+        modified:   src/main/webapp/app/decoration/scrollBox.vue
+        modified:   src/main/webapp/app/decoration/target.vue
+        modified:   src/main/webapp/app/decoration/testStatics.vue
+        modified:   src/main/webapp/app/decoration/weatherWindow.vue
+
+no changes added to commit (use "git add" and/or "git commit -a")
+Dropped refs/stash@{0} (21acdec41561dea5b16600885f7e51cfe2839219)
+
+C:\Users\chenhy\Desktop\App\毕业设计\jhi>git checkout main
+M       src/main/webapp/app/core/home/home.vue
+M       src/main/webapp/app/core/readme/readme.vue
+M       src/main/webapp/app/decoration/scrollBox.vue
+M       src/main/webapp/app/router/index.ts
+M       tsconfig.app.json
+M       vite.config.mts
+Switched to branch 'main'
+Your branch is up to date with 'origin/main'.
+
+```
 
 # :computer: ​编译说明
 

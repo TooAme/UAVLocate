@@ -123,8 +123,8 @@ public class StaticsService {
         staticsRepository.deleteById(id);
     }
 
-    // 定时任务，每2秒执行一次
-    @Scheduled(fixedRate = 1000)
+    // 定时任务，每10秒执行一次
+    @Scheduled(fixedRate = 10000)
     public void addNewStatics() {
         LOG.debug("Executing scheduled task to add new Statics");
 
