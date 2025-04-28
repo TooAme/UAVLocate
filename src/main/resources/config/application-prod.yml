@@ -17,7 +17,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.chenhy: INFO
+    com.chenhy: FATAL
 
 management:
   prometheus:

@@ -84,12 +84,23 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = jHipsterProperties.getCors();
+        config.addAllowedMethod("*"); // 允许所有方法
         if (!CollectionUtils.isEmpty(config.getAllowedOrigins()) || !CollectionUtils.isEmpty(config.getAllowedOriginPatterns())) {
-            LOG.debug("Registering CORS filter");
+            LOG.debug("Registering CORS filter with allowed origins: {}", config.getAllowedOrigins());
+            LOG.debug("Registering CORS filter with allowed origin patterns: {}", config.getAllowedOriginPatterns());
             source.registerCorsConfiguration("/api/**", config);
             source.registerCorsConfiguration("/management/**", config);
             source.registerCorsConfiguration("/v3/api-docs", config);
             source.registerCorsConfiguration("/swagger-ui/**", config);
+            source.registerCorsConfiguration("/ws/**", config); // 确保 /ws/** 被包含在 CORS 配置中
+        } else {
+            // Add default CORS configuration if none exists
+            config.addAllowedOrigin("http://localhost:9000");
+            config.addAllowedOrigin("http://localhost:8080");
+            config.addAllowedMethod("*"); // 允许所有方法
+            config.addAllowedHeader("*");
+            config.setAllowCredentials(true);
+            source.registerCorsConfiguration("/**", config);
         }
         return new CorsFilter(source);
     }

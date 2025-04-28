@@ -137,7 +137,7 @@ public class StaticsResource {
     @GetMapping("")
     public List<Statics> getAllStatics(@RequestParam(name = "sort", required = false, defaultValue = "id,desc") String sort) {
         LOG.debug("REST request to get all Statics");
-        Pageable pageable = PageRequest.of(0, 20);
+        Pageable pageable = PageRequest.of(0, 10);
         if (sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split(",");
             Sort.Direction direction = "desc".equalsIgnoreCase(sortParams[1]) ? Sort.Direction.DESC : Sort.Direction.ASC;

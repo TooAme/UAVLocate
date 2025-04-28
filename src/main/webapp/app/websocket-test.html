@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <title>WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <button onclick="connect()">Connect</button>
+      <button onclick="disconnect()">Disconnect</button>
+      <br /><br />
+      <input type="text" id="message" placeholder="Type a message..." />
+      <button onclick="sendMessage()">Send</button>
+      <br /><br />
+      <div id="response"></div>
+    </div>
+
+    <script>
+      let stompClient = null;
+
+      function connect() {
+        const socket = new SockJS('http://localhost:9000/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+          console.log('Connected: ' + frame);
+          document.getElementById('response').innerHTML += '<p>Connected to server</p>';
+
+          // 订阅消息
+          stompClient.subscribe('/topic/greetings', function (response) {
+            showMessage(response.body);
+          });
+        });
+      }
+
+      function disconnect() {
+        if (stompClient !== null) {
+          stompClient.disconnect();
+          document.getElementById('response').innerHTML += '<p>Disconnected</p>';
+        }
+      }
+
+      function sendMessage() {
+        const message = document.getElementById('message').value;
+        stompClient.send('/app/hello', {}, message);
+        document.getElementById('message').value = '';
+      }
+
+      function showMessage(message) {
+        const response = document.getElementById('response');
+        response.innerHTML += '<p>' + message + '</p>';
+      }
+    </script>
+  </body>
+</html>

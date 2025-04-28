@@ -14,6 +14,7 @@
     <div class="sidebar right-sidebar">
       <div class="right-sidebar-under"></div>
       <scroll-box class="scroll-box" />
+      <ws-test class="ws-test" />
     </div>
   </div>
 </template>
@@ -27,6 +28,7 @@ import WeatherWindow from '@/decoration/weatherWindow.vue';
 import MonitorWindow from '@/decoration/monitorWindow.vue';
 import TestStatics from '@/decoration/testStatics.vue';
 import FinalData from '@/decoration/finalData.vue';
+import WsTest from '@/decoration/wstest.vue';
 
 export default defineComponent({
   name: 'Home',
@@ -38,6 +40,7 @@ export default defineComponent({
     MonitorWindow,
     TestStatics,
     FinalData,
+    WsTest,
   },
 });
 </script>

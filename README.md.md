@@ -1579,6 +1579,98 @@ Your branch is up to date with 'origin/main'.
 
 ```
 
+# 2025.4 VI
+
+## :date: 前端更新 V
+
+**之前滚动栏内显示到时间均为年月日以及时分，但是没有秒位，这是instant数据的标准格式，而我们这样的数据需要秒位。**
+
+**而直接变更instant的格式的话需要重构许多代码，因此我们在前端进行修改。**
+
+**首先我尝试了不使用item.time（后端传入的时间）而是将当前时间赋给一个变量，仅滚动栏中显示这个变量。**
+
+**但是这导致了滚动栏所有时间都变成了当前时间，并且一直更新。**
+
+**于是在获取新数据时，首先创建一个包含所有现有数据ID的集合。**
+
+**如果该ID已经存在于现有数据中，则保持原有的生成时间不变，如果该ID是新的，则为其设置新的生成时间。**
+
+**这样，每条数据都会保持它第一次被获取时的时间，而不会在每次刷新时都更新为当前时间。只有新获取的数据才会设置新的时间。**
+
+```javascript
+const retrieveStaticss = async () => {
+  try {
+    const res = await staticsService.retrieve();
+    // 获取现有数据的ID列表
+    const existingIds = new Set(statics.value.map(item => item.id));
+
+    // 处理新数据，保留已有数据的时间
+    statics.value = res.data.map(item => {
+      // 如果数据已存在，保持原有时间
+      if (existingIds.has(item.id)) {
+        const existingItem = statics.value.find(existing => existing.id === item.id);
+        return {
+          ...item,
+          generatedTime: existingItem.generatedTime,
+        };
+      }
+      // 如果是新数据，设置新时间
+      return {
+        ...item,
+        generatedTime: new Date(),
+      };
+    });
+  } catch (err) {
+    console.error('Error fetching statics:', err);
+  }
+};
+```
+
+**格式设置：**
+
+```javascript
+const hours = String(item.generatedTime.getHours()).padStart(2, '0');
+const minutes = String(item.generatedTime.getMinutes()).padStart(2, '0');
+const seconds = String(item.generatedTime.getSeconds()).padStart(2, '0');
+const time = `${hours}:${minutes}:${seconds}`;
+```
+
+**效果：**
+
+<img src="images/2025412.png" alt="20250313134007" style="zoom:80%;" />
+
+**修改一下格式排列:**
+
+<img src="images/2025413.png" alt="20250313134007" style="zoom:77%;" />
+
+**仍有一些显示bug：会显示老数据，但还未找到解决方法。**
+
+**不过后面会不再自动生成新数据，而是监听摄像头获得新数据再存入表中，**
+
+**考虑到传输的数据量（特别大），需要修改滚动栏展示样式（取消滚动为替换）。**
+
+**这样的话没有什么太大的影响。**
+
+## :rocket: Webscoket配置(弃用)
+
+**由于前端显示的监控视频和三维坐标数据需要更实时的数据，接下来配置Websocket。**
+
+**导入依赖：**
+
+### MAVEN :link:
+
+```xml
+<dependency>
+    <groupId>javax.websocket</groupId>
+    <artifactId>javax.websocket-api</artifactId>
+    <version>1.1</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-websocket</artifactId>
+</dependency>
+```
+
 # :computer: ​编译说明
 
 **node版本：`^22`**
