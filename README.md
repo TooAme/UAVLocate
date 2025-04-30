@@ -1104,7 +1104,7 @@ calculatedZoffset = Math.abs(posZ - targetPosZ);
 
 ## :electric_plug: 三维坐标获取
 
-**今天网上冲浪的时候看到闲鱼上奥比中光的 Astra Pro 深度摄像头只卖85一个，赶紧入手了一个。**
+**今天网上冲浪的时候看到奥比中光的 Astra Pro 深度摄像头十分优惠，赶紧入手了一个。**
 
 **等过几天到货了试试基本功能没问题的话就可以拿来测三维坐标了。**
 
@@ -1651,7 +1651,7 @@ const time = `${hours}:${minutes}:${seconds}`;
 
 **这样的话没有什么太大的影响。**
 
-## :rocket: Webscoket配置(弃用)
+## :rocket: Webscoket配置
 
 **由于前端显示的监控视频和三维坐标数据需要更实时的数据，接下来配置Websocket。**
 
@@ -1670,6 +1670,104 @@ const time = `${hours}:${minutes}:${seconds}`;
     <artifactId>spring-boot-starter-websocket</artifactId>
 </dependency>
 ```
+
+# 2025.4 VII
+
+## :rose: ​WebSocket连接
+
+**通过询问前辈，解决了困扰我半个月的，websocket一直连不上的问题：**
+
+```java
+public class SpaWebFilter extends OncePerRequestFilter {
+
+    /**
+     * Forwards any unmapped paths (except those containing a period) to the client {@code index.html}.
+     */
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
+        // Request URI includes the contextPath if any, removed it.
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        if (
+            !path.startsWith("/api") &&
+            !path.startsWith("/management") &&
+            !path.startsWith("/v3/api-docs") &&
+            !path.contains(".") &&
+            !path.startsWith("/ws") &&
+            path.matches("/(.*)")
+        ) {
+            request.getRequestDispatcher("/index.html").forward(request, response);
+            return;
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
+**SpaWebFilter中没有添加对ws的过滤。**
+
+**在web.filter.spawebfilter.java 中增加!path.startsWith("/ws") &&** 
+
+**这样 ws 开头的链接就不会进入到 index.html 中。**
+
+<img src="images/2025414.png" alt="20250313134007" style="zoom:87%;" />
+
+**连接成功。接下来前后端数据可以实时交互了。**
+
+## :movie_camera: ​深度相机配置
+
+**驱动安装：https://dl.orbbec3d.com/dist/drivers/win32/astra-win32-driver-4.3.0.22.zip**
+
+**连接成功，试试深度模式：**
+
+<img src="images/2025416.png" alt="20250313134007" style="zoom:87%;" />
+
+**使用 WebSocket 实现 Orbbec Astra Pro 相机画面实时传输到 Spring Boot 前端，涉及 相机采集 → 后端 WebSocket 服务 → 前端渲染 三个核心步骤，下面是用flowchart制作的流程图：**
+
+<img src="images/20250417.png" alt="20250313134007" style="zoom:87%;" />
+
+**python版本使用3.7.9**
+
+```cmd
+pip install stomp.py
+pip install opencv-python
+pip install websockets==10.4
+```
+
+**使用清华源安装openni**
+
+```cmd
+pip install openni -ihttps://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+**启用 STOMP Broker：**
+
+```java
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws").withSockJS();
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        // 启用内置内存Broker（默认监听61613端口）
+        registry.enableStompBrokerRelay("/topic")
+                .setRelayHost("localhost")
+                .setRelayPort(61613);
+        
+        registry.setApplicationDestinationPrefixes("/app");
+    }
+}
+```
+
+
+
+
 
 # :computer: ​编译说明
 

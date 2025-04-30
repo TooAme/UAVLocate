@@ -143,12 +143,16 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+    pathmatch:
+      matching-strategy: ant_path_matcher
   security:
     oauth2:
       resourceserver:
         jwt:
           authority-prefix: ''
           authorities-claim-name: auth
+    csrf:
+      enabled: false
   task:
     execution:
       thread-name-prefix: uav-locate-task-

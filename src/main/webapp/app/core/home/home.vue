@@ -4,6 +4,7 @@
       <a href="../../../../../../README.html">更新日志</a>
     </div>
     <header-image class="header-image" />
+      <ws-test class="ws-test" />
     <div class="sidebar left-sidebar">
       <div class="left-sidebar-under"></div>
       <monitor-window class="monitor-window" />
@@ -14,7 +15,6 @@
     <div class="sidebar right-sidebar">
       <div class="right-sidebar-under"></div>
       <scroll-box class="scroll-box" />
-      <ws-test class="ws-test" />
     </div>
   </div>
 </template>
@@ -153,5 +153,12 @@ export default defineComponent({
   right: 0;
   background-image: url('images/第二层矩形框.png');
   background-size: cover;
+}
+
+.ws-test {
+  position: fixed;
+  top: 160px;
+  right: 40%;
+  z-index: 10000;
 }
 </style>

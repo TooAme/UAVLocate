@@ -5,54 +5,58 @@
       {{ showVideo ? '关闭监控面板' : '打开监控面板' }}
     </button>
 
-    <!-- 视频播放器浮层 -->
+    <!-- Canvas浮层 -->
     <div v-if="showVideo" class="video-overlay">
       <div class="video-player">
         <div class="video-header">
-          <h3>无人机位置实时监控（测试视频）</h3>
+          <h3>无人机位置实时监控</h3>
           <button @click="toggleVideoPlayer" class="close-button">&times;</button>
         </div>
-        <video ref="videoPlayer" controls autoplay class="video-element">
-          <source src="/content/videos/测试视频2.mp4" type="video/mp4" />
-          您的浏览器不支持视频播放
-        </video>
+        <canvas ref="canvas" width="640" height="480" class="video-element"></canvas>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
+import { connectVideoSocket } from '@/utils/websocket';
 
 export default defineComponent({
   name: 'MonitorWindow',
   setup() {
     const showVideo = ref(false);
-    const videoPlayer = ref<HTMLVideoElement | null>(null);
+    const canvas = ref<HTMLCanvasElement | null>(null);
+    let client: Client | null = null;
 
     const toggleVideoPlayer = () => {
       showVideo.value = !showVideo.value;
 
-      // 视频播放控制
-      if (showVideo.value) {
-        // 延迟一点执行，确保DOM已更新
-        setTimeout(() => {
-          if (videoPlayer.value) {
-            videoPlayer.value.play().catch(err => {
-              console.error('视频播放失败:', err);
-            });
-          }
-        }, 100);
-      } else {
-        if (videoPlayer.value) {
-          videoPlayer.value.pause();
-        }
+      if (showVideo.value && canvas.value) {
+        const ctx = canvas.value.getContext('2d');
+        const img = new Image();
+
+        client = connectVideoSocket((frameData) => {
+          img.onload = () => {
+            ctx?.clearRect(0, 0, canvas.value!.width, canvas.value!.height);
+            ctx?.drawImage(img, 0, 0);
+          };
+          img.src = 'data:image/jpeg;base64,' + frameData;
+        });
+      } else if (client) {
+        client.deactivate();
       }
     };
 
+    onUnmounted(() => {
+      if (client) {
+        client.deactivate();
+      }
+    });
+
     return {
       showVideo,
-      videoPlayer,
+      canvas,
       toggleVideoPlayer,
     };
   },

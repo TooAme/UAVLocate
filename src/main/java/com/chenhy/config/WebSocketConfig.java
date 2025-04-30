@@ -1,7 +1,9 @@
 package com.chenhy.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -27,7 +29,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             .setHandshakeHandler(new DefaultHandshakeHandler())
             .addInterceptors(new HttpSessionHandshakeInterceptor())
             .withSockJS(); // 添加SockJS支持
-        System.out.println("WebSocketConfig.registerStompEndpoints:" + registry.getClass()); // 获得后端ws路径
+        //System.out.println("WebSocketConfig.registerStompEndpoints:" + registry.getClass()); // 获得后端ws路径
     }
 
     @Override
@@ -36,5 +38,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             .setMessageSizeLimit(8192) // 设置消息大小限制
             .setSendBufferSizeLimit(512 * 1024) // 设置发送缓冲区大小限制
             .setSendTimeLimit(20 * 1000); // 设置发送超时时间
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/ws/**");
     }
 }

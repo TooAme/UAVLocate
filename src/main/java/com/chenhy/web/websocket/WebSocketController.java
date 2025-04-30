@@ -13,4 +13,9 @@ public class WebSocketController {
         Thread.sleep(1000); // 模拟延迟
         return "Server received: " + message;
     }
+    @MessageMapping("/video")  // 接收/app/video的消息
+    @SendTo("/topic/video")    // 转发到前端订阅的地址
+    public String handleFrame(String frameData) {
+        return frameData;
+    }
 }
