@@ -7,16 +7,7 @@ import base64
 import logging
 import os
 from websockets.exceptions import InvalidStatusCode, ConnectionClosed
-import requests
 
-# 获取JWT token示例
-auth_url = "http://localhost:8080/api/authenticate"
-credentials = {
-    "username": "admin",
-    "password": "admin"
-}
-response = requests.post(auth_url, json=credentials)
-token = response.json().get("id_token")  # 根据实际API响应调整
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
@@ -25,29 +16,29 @@ logging.basicConfig(
 logger = logging.getLogger('OrbbecDepthStream')
 
 async def send_depth_frame(ws, frame_data):
-    """发送深度帧数据"""
     try:
-        # 归一化深度数据并转换为伪彩色
-        normalized_depth = cv2.normalize(frame_data, None, 0, 255, cv2.NORM_MINMAX)
-        colored_depth = cv2.applyColorMap(np.uint8(normalized_depth), cv2.COLORMAP_JET)
+        # 将深度数据转换为8位灰度图像
+        frame_normalized = cv2.normalize(frame_data, None, 0, 255, cv2.NORM_MINMAX)
+        frame_8bit = np.uint8(frame_normalized)
 
-        # 压缩图像
-        _, buffer = cv2.imencode('.jpg', colored_depth, [
-            cv2.IMWRITE_JPEG_QUALITY, 85,
-            cv2.IMWRITE_JPEG_PROGRESSIVE, 1
-        ])
+        # 编码为JPEG格式
+        _, buffer = cv2.imencode('.jpg', frame_8bit)
+        jpg_as_text = base64.b64encode(buffer.tobytes()).decode('utf-8')  # 添加.tobytes()转换
 
-        # 修改消息目标路径为/video
-        message = (
+        headers = (
             "SEND\n"
-            "destination:/app/video\n"  # 匹配@MessageMapping("/video")
-            "content-type:image/jpeg\n\n" +
-            base64.b64encode(buffer).decode() +
-            "\x00"
-        )
+            "destination:/app/video\n"
+            "content-type:text/plain\n"
+            "content-length:" + str(len(jpg_as_text)) + "\n"
+            "\n"
+        ).encode('utf-8')
+
+        message = headers + jpg_as_text.encode('utf-8') + b"\x00"
+        logger.info(f"准备发送数据，长度: {len(buffer)}")  # 添加发送前日志
         await ws.send(message)
+        logger.info("数据已发送")  # 确认发送完成
     except Exception as e:
-        logger.error(f"发送深度帧失败: {str(e)}")
+        logger.error(f"发送失败详情: {str(e)}", exc_info=True)
 
 async def depth_streamer():
     """深度图像流主逻辑"""
@@ -71,12 +62,17 @@ async def depth_streamer():
             async with websockets.connect(
                 'ws://localhost:8080/ws/websocket',
                 ping_interval=30,
-                timeout=15,
-                # Remove all extra headers temporarily
+                timeout=15
             ) as ws:
                 logger.info("WebSocket连接成功")
-                # STOMP握手(添加SockJS心跳配置)
-                await ws.send("CONNECT\naccept-version:1.2\nheart-beat:10000,10000\nhost:localhost\n\n\x00")
+                # 修改STOMP握手消息，移除认证头
+                await ws.send(
+                    "CONNECT\n"
+                    "accept-version:1.0,1.1,1.2\n"
+                    "heart-beat:10000,10000\n"
+                    "host:localhost\n\n"
+                    "\x00"
+                )
                 retry_count = 0
 
                 # 主循环
@@ -87,7 +83,7 @@ async def depth_streamer():
                         frame_data = frame_data.reshape((frame.height, frame.width))
 
                         await send_depth_frame(ws, frame_data)
-                        await asyncio.sleep(0.03)  # ~30fps
+                        await asyncio.sleep(1)  # ~30fps
 
                     except ConnectionClosed:
                         logger.warning("连接断开，尝试重连...")

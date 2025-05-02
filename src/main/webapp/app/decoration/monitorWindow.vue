@@ -13,6 +13,12 @@
           <button @click="toggleVideoPlayer" class="close-button">&times;</button>
         </div>
         <canvas ref="canvas" width="640" height="480" class="video-element"></canvas>
+        <div class="connection-status">
+          连接状态: {{ 
+            connectionStatus === 'connected' ? '已连接' : 
+            connectionStatus === 'connecting' ? '连接中' : '已断开' 
+          }}
+        </div>
       </div>
     </div>
   </div>
@@ -20,31 +26,99 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue';
-import { connectVideoSocket } from '@/utils/websocket';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 export default defineComponent({
   name: 'MonitorWindow',
   setup() {
     const showVideo = ref(false);
     const canvas = ref<HTMLCanvasElement | null>(null);
+    const connectionStatus = ref<'disconnected' | 'connecting' | 'connected'>('disconnected');
     let client: Client | null = null;
+
+    const connectVideoSocket = (videoCallback: (frameData: string) => void) => {
+      const socket = new SockJS('ws://localhost:8080/ws');
+      console.log('WebSocket连接建立');
+      
+      // 添加详细的WebSocket状态监听
+      socket.onopen = () => {
+        console.log('Web Socket Opened');
+        connectionStatus.value = 'connecting';
+      };
+      socket.onclose = () => {
+        console.log('Web Socket Closed');
+        connectionStatus.value = 'disconnected';
+      };
+      socket.onerror = (e: Event) => {  // 添加明确的Event类型声明
+        console.error('Web Socket Error:', e);
+        connectionStatus.value = 'disconnected';
+      };
+
+      const stompClient = new Client({
+        connectHeaders: {
+          'accept-version': '1.2,1.1,1.0',
+          'heart-beat': '10000,10000'
+        },
+        debug: function(str) {
+          console.log('STOMP:', str);
+        },
+        webSocketFactory: () => socket,
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        onConnect: () => {
+          console.log('STOMP连接成功，订阅/topic/video');
+          connectionStatus.value = 'connected';
+          stompClient.subscribe('/topic/video', (message) => {
+            console.log('收到视频帧数据，长度:', message.body.length);
+            videoCallback(message.body);
+          });
+        },
+        onStompError: (frame) => {
+          console.error('Broker reported error: ' + frame.headers['message']);
+          connectionStatus.value = 'disconnected';
+        },
+        onWebSocketClose: () => {
+          console.log('WebSocket连接关闭');
+          connectionStatus.value = 'disconnected';
+        },
+        // 添加连接失败回调
+        onDisconnect: () => {
+          console.log('STOMP连接断开');
+          connectionStatus.value = 'disconnected';
+        }
+      });
+
+      stompClient.activate();
+      return stompClient;
+    };
 
     const toggleVideoPlayer = () => {
       showVideo.value = !showVideo.value;
 
       if (showVideo.value && canvas.value) {
+        connectionStatus.value = 'connecting';
         const ctx = canvas.value.getContext('2d');
         const img = new Image();
 
         client = connectVideoSocket((frameData) => {
-          img.onload = () => {
-            ctx?.clearRect(0, 0, canvas.value!.width, canvas.value!.height);
-            ctx?.drawImage(img, 0, 0);
+            console.log("收到数据:", frameData.length);
+            connectionStatus.value = 'connected';
+            img.onload = () => {
+              ctx?.clearRect(0, 0, canvas.value!.width, canvas.value!.height);
+              ctx?.drawImage(img, 0, 0, canvas.value!.width, canvas.value!.height);
+            };
+            img.src = 'data:image/jpeg;base64,' + frameData;
+          });
+
+          client.onWebSocketError = () => {
+            connectionStatus.value = 'disconnected';
+            console.error('WebSocket连接错误');
           };
-          img.src = 'data:image/jpeg;base64,' + frameData;
-        });
       } else if (client) {
         client.deactivate();
+        connectionStatus.value = 'disconnected';
       }
     };
 
@@ -58,6 +132,7 @@ export default defineComponent({
       showVideo,
       canvas,
       toggleVideoPlayer,
+      connectionStatus,
     };
   },
 });
