@@ -83,7 +83,7 @@ async def depth_streamer():
                         frame_data = frame_data.reshape((frame.height, frame.width))
 
                         await send_depth_frame(ws, frame_data)
-                        await asyncio.sleep(1)  # ~30fps
+                        await asyncio.sleep(0.03)  # ~30fps
 
                     except ConnectionClosed:
                         logger.warning("连接断开，尝试重连...")
