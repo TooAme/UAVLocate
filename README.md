@@ -1920,7 +1920,7 @@ pip install ultralytics==8.0.20  # 这是最后一个官方支持Python 3.7的�
 
 **代码实现：**
 
-### Python
+### python :link:
 
 ```python
 import cv2
@@ -2040,9 +2040,8 @@ class DepthObjectDetector:
             message = headers + json.dumps(data).encode('utf-8') + b"\x00"
             await websocket.send(message)
 
-# 示例用法
 if __name__ == "__main__":
-    # 示例相机内参矩阵(需要根据实际相机校准)
+    # 相机内参矩阵(根据实际相机校准)
     camera_matrix = np.array([
         [640, 0, 320],
         [0, 480, 240],
@@ -2145,9 +2144,21 @@ ret, rgb_frame = cap.read()
 
 **但是由于相机设备处理性能问题，帧数相当低。**
 
-**使用预载的yolo v8模型已经能识别到物体：（标签为置信度）**
+**使用预载的YOLO v8模型已经能识别到物体：（标签为置信度）**
 
 <img src="images/202557.png" alt="20250313134007" style="zoom:87%;" />
+
+# 2025.5 II
+
+
+
+## :hourglass_flowing_sand: ​对象过滤 
+
+**如上图所示，摄像头识别到了多个物体，而目前阶段我希望只支持一架无人机 - 即单个物体的识别。**
+
+**那我们只需要保留置信度最高的物体即可。**
+
+**并向后端返回这个物体的三维坐标，后端再根据这个三维坐标生成新的statics数据。**
 
 # :computer: ​编译说明
 
@@ -2161,7 +2172,7 @@ ret, rgb_frame = cap.read()
 
 **前端端口：`9000`**
 
-**Python启动：`camera_server.py`**
+**Python启动：`camera_server.py`、`posGet.py`**
 
 # :open_file_folder: ​项目结构
 
@@ -2208,11 +2219,21 @@ ret, rgb_frame = cap.read()
 **配置 (src/main/resources/)**
 
 - **config/application.yml (及 .properties): 主要的 Spring Boot 配置文件（数据库连接、服务器端口、第三方 API 密钥等）。**
-
 - **i18n/: 后端消息的国际化文件。**
-
 - **liquibase/: 数据库表结构变更（迁移）的记录文件。**
-
 - **static/ 或 public/: 由 Web 服务器直接提供服务的静态资源。**
-
 - **templates/: 服务端模板文件（用于生成邮件内容）。**
+
+# :eagle: ​后续计划
+
+**不再仅仅是监测功能，而是融合各种功能的无人机降落系统。**
+
+- **更换高端深度相机。**
+- **使用新版本YOLO并自行训练模型。**
+- **获得更加实时的气象数据。**
+- **完善更高精度的算法。**
+- **<font color = blue>实时向无人机发送偏移数据，无人机根据数据自行调整姿态进行准确地降落。</font>**
+- **添加对多台无人机的支持。**
+- **增加实用功能：环境异常(恶劣天气)报警、异常降落报警**
+- **<font color = blue>网页将支持手机版。</font>**
+- **增加更多支持环境：钉钉、客户端（一体机等）。**

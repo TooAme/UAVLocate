@@ -53,15 +53,15 @@ export default defineComponent({
 <style scoped>
 .target-container {
   position: fixed;
-  top: 365px;
-  left: 280px;
-  transform: translateY(-50%);
-  width: calc(300 * 0.072vw);
-  height: calc(300 * 0.072vw);
+  top: 0;
+  left: 0;
+  transform: translate(110%, -17.7%);
+  width: calc(300px);
+  height: calc(300px);
   background: linear-gradient(to bottom, #000c27aa, #000000e2);
   border-radius: 6;
   overflow: hidden;
-  z-index: 1050;
+  z-index: 10500;
   pointer-events: none;
   padding-top: calc(25 * 0.072vw);
 }

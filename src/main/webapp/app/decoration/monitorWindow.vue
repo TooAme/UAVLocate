@@ -9,7 +9,7 @@
     <div v-if="showVideo" class="video-overlay">
       <div class="video-player">
         <div class="video-header">
-          <h3>无人机位置实时监控</h3>
+          <h3>无人机位置实时监控 - 深度图</h3>
           <button @click="toggleVideoPlayer" class="close-button">&times;</button>
         </div>
         <canvas ref="canvas" width="640" height="480" class="video-element"></canvas>

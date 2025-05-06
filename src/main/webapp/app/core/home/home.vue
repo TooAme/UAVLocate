@@ -4,13 +4,13 @@
       <a href="../../../../../../README.html">更新日志</a>
     </div>
     <header-image class="header-image" />
-      <ws-test class="ws-test" />
+    <ws-test class="ws-test" />
+    <test-statics class="test-statics" />
+    <final-data class="final-data" />
     <div class="sidebar left-sidebar">
       <div class="left-sidebar-under"></div>
       <monitor-window class="monitor-window" />
-      <test-statics class="test-statics" />
       <weather-window class="weather-window" />
-      <final-data class="final-data" />
     </div>
     <div class="sidebar right-sidebar">
       <div class="right-sidebar-under"></div>

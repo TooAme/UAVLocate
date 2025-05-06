@@ -254,6 +254,8 @@ export default defineComponent({
 <style scoped>
 .final-data-container {
   position: fixed;
+  /* width: 300px;
+  height: 600px; */
   top: 38.5%;
   left: 35%;
   transform: translate(-50%, -50%);
@@ -269,7 +271,7 @@ export default defineComponent({
   border-radius: 6px;
   padding: 15px;
   color: white;
-  width: 250px;
+  width: 300px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 

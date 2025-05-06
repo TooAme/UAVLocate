@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <h1>WebSocket</h1>
+  <div class="ws-container">
+    <h1 class="ws-title">WebSocket</h1>
     <div class="input-group">
-      <input v-model="message" placeholder="输入测试消息" />
-      <button @click="sendMessage">发送</button>
-      <button @click="sendTestMessage">发送测试消息</button>
+      <input v-model="message" placeholder="输入测试消息" class="ws-input" />
+      <button @click="sendMessage" class="ws-button">发送</button>
+      <button @click="sendTestMessage" class="ws-button">发送测试消息</button>
     </div>
     <div class="message-box">
       <div v-for="(msg, index) in messages" :key="index" class="message">
@@ -111,3 +111,101 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.ws-container {
+  background: linear-gradient(to bottom, #000c27aa, #000000e2);
+  border-radius: 8px;
+  padding: 15px;
+  width: 300px;
+  color: white;
+  font-family: '微软雅黑';
+  position: fixed;
+  max-height: 30%;
+  left: 46.8%;
+  transform: translateY(150%);
+}
+
+.ws-title {
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 15px;
+  background: linear-gradient(to bottom, #fff 40%, #62e1f1);
+  -webkit-background-clip: text;
+  color: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 5px;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.ws-input {
+  flex: 1;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+}
+
+.ws-input:focus {
+  outline: none;
+  border-color: #62e1f1;
+}
+
+.ws-button {
+  background: linear-gradient(to bottom, #194480, #2174b8);
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ws-button:hover {
+  background: linear-gradient(to bottom, #215596, #2a8bd8);
+}
+
+.message-box {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.message {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+}
+
+.timestamp {
+  color: #ccc;
+  margin-right: 10px;
+}
+
+.status-indicator {
+  font-size: 12px;
+  text-align: center;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.status-connected {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+}
+
+.status-disconnected {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+</style>
