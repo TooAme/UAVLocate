@@ -120,8 +120,6 @@ export default {
   width: 300px;
   color: white;
   font-family: '微软雅黑';
-  position: fixed;
-  max-height: 30%;
   left: 46.8%;
   transform: translateY(150%);
 }

@@ -8,7 +8,7 @@ from ultralytics import YOLO
 from openni import openni2
 
 class DepthObjectDetector:
-    def __init__(self, camera_matrix, websocket_url='ws://localhost:8080/ws'):
+    def __init__(self, camera_matrix, websocket_url='ws://localhost:8080/ws/websocket'):
         print("正在加载YOLOv8模型...")
         try:
             self.model = YOLO('yolov8n.pt')
@@ -41,36 +41,38 @@ class DepthObjectDetector:
             cv2.imshow('Object Detection', rgb_frame)
             cv2.waitKey(1) & 0xFF
             return detections
-        for box in results[0].boxes:
-            bbox = box.xyxy[0].cpu().numpy()
-            cls_id = int(box.cls[0])
-            conf = float(box.conf[0])
+            
+        # 找出置信度最高的检测框
+        max_conf_box = max(results[0].boxes, key=lambda box: float(box.conf[0]))
+        bbox = max_conf_box.xyxy[0].cpu().numpy()
+        cls_id = int(max_conf_box.cls[0])
+        conf = float(max_conf_box.conf[0])
 
-            # 绘制边界框和标签
-            cv2.rectangle(rgb_frame, (int(bbox[0]), int(bbox[1])),
-                         (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
-            label = f"{self.model.names[cls_id]}: {conf:.2f}"
-            cv2.putText(rgb_frame, label, (int(bbox[0]), int(bbox[1]) - 10),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        # 绘制边界框和标签
+        cv2.rectangle(rgb_frame, (int(bbox[0]), int(bbox[1])),
+                     (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
+        label = f"{self.model.names[cls_id]}: {conf:.2f}"
+        cv2.putText(rgb_frame, label, (int(bbox[0]), int(bbox[1]) - 10),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-            # 计算三维坐标
-            x, y, z = self._calculate_3d_coordinates(depth_frame, bbox)
-            z = z / 1000.0
+        # 计算三维坐标
+        x, y, z = self._calculate_3d_coordinates(depth_frame, bbox)
+        z = z / 1000.0
 
-            detections.append({
-                'class_id': cls_id,
-                'class_name': self.model.names[cls_id],
-                'confidence': conf,
-                'bbox': bbox.tolist(),
-                'position_3d': [x, y, z]
-            })
+        detections.append({
+            'class_id': cls_id,
+            'class_name': self.model.names[cls_id],
+            'confidence': conf,
+            'bbox': bbox.tolist(),
+            'position_3d': [x, y, z]
+        })
 
-            # 添加坐标日志输出
-            print(f"检测到物体: {self.model.names[cls_id]}")
-            print(f"二维坐标: ({int((bbox[0] + bbox[2]) / 2)}, {int((bbox[1] + bbox[3]) / 2)})")
-            print(f"三维坐标: X={x:.2f}m, Y={y:.2f}m, Z={z:.2f}m")
-            print(f"置信度: {conf:.2%}")
-            print("-" * 40)
+        # 添加坐标日志输出
+        print(f"检测到最高置信度物体: {self.model.names[cls_id]}")
+        print(f"二维坐标: ({int((bbox[0] + bbox[2]) / 2)}, {int((bbox[1] + bbox[3]) / 2)})")
+        print(f"三维坐标: X={x:.2f}单位距离, Y={y:.2f}单位距离, Z={z:.2f}单位距离")
+        print(f"置信度: {conf:.2%}")
+        print("-" * 40)
 
         # 显示结果并确保窗口刷新
         cv2.imshow('Object Detection', rgb_frame)
@@ -101,19 +103,42 @@ class DepthObjectDetector:
 
     async def send_to_backend(self, data):
         """通过WebSocket发送数据到后端，使用STOMP协议"""
-        async with websockets.connect(self.websocket_url) as websocket:
-            # STOMP协议格式的消息头
-            headers = (
-                "SEND\n"
-                "destination:/app/greetings\n"
-                "content-type:application/json\n"
-                "content-length:" + str(len(json.dumps(data))) + "\n"
-                "\n"
-            ).encode('utf-8')
-
-            # 组合消息头和消息体
-            message = headers + json.dumps(data).encode('utf-8') + b"\x00"
-            await websocket.send(message)
+        try:
+            async with websockets.connect(
+                self.websocket_url,
+                ping_interval=30,
+                timeout=15
+            ) as websocket:
+                # 完整的STOMP握手
+                await websocket.send(
+                    "CONNECT\n"
+                    "accept-version:1.0,1.1,1.2\n"
+                    "heart-beat:10000,10000\n"
+                    "host:localhost\n\n"
+                    "\x00"
+                )
+                
+                # 等待CONNECTED帧响应
+                response = await websocket.recv()
+                if "CONNECTED" not in response:
+                    raise Exception("STOMP握手失败")
+                
+                if data and len(data) > 0:
+                    position = data[0]['position_3d']
+                    coord_str = f"{position[0]:.2f},{position[1]:.2f},{position[2]:.2f}"
+                    
+                    headers = (
+                        "SEND\n"
+                        "destination:/app/data\n"
+                        "content-type:text/plain\n"
+                        "content-length:" + str(len(coord_str)) + "\n"
+                        "\n"
+                    )
+                    message = headers + coord_str + "\x00"
+                    await websocket.send(message.encode('utf-8'))
+                    print(f"[{time.strftime('%H:%M:%S')}] 数据发送成功")
+        except Exception as e:
+            print(f"[{time.strftime('%H:%M:%S')}] 发送失败: {str(e)}")
 
 # 示例用法
 if __name__ == "__main__":
@@ -168,6 +193,10 @@ if __name__ == "__main__":
 
                 # 处理帧并显示
                 detections = await detector.process_frame(rgb_frame, depth_frame)
+                
+                # 发送数据到后端
+                if detections:
+                    await detector.send_to_backend(detections)
 
                 # 未检测到物体且超过3秒时输出提示
                 if len(detections) == 0 and time.time() - last_detection_time > 3:

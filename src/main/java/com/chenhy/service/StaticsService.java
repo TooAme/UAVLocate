@@ -124,8 +124,8 @@ public class StaticsService {
     }
 
     // 定时任务，每10秒执行一次
-    @Scheduled(fixedRate = 10000)
-    public void addNewStatics() {
+    //@Scheduled(fixedRate = 10000)
+    public void addNewStatics(double x, double y, double z) {
         LOG.debug("Executing scheduled task to add new Statics");
 
         String locationId = "101272001";
@@ -143,11 +143,14 @@ public class StaticsService {
             //            newStatics.setPosX(0L);
             //            newStatics.setPosY(0L);
             //            newStatics.setPosZ(0L);
-            Random rand = new Random();
-            newStatics.setPosX(rand.nextLong(20000) - 10000);
-            newStatics.setPosY(rand.nextLong(20000) - 10000);
-            newStatics.setPosZ(rand.nextLong(9999) + 1);
-            // 保存新的Statics记录git
+//            Random rand = new Random();
+//            newStatics.setPosX(rand.nextLong(20000) - 10000);
+//            newStatics.setPosY(rand.nextLong(20000) - 10000);
+//            newStatics.setPosZ(rand.nextLong(9999) + 1);
+            newStatics.setPosX((long) (x * 100));
+            newStatics.setPosY((long) (y * 100));
+            newStatics.setPosZ((long) (z * 100));
+            // 保存新的Statics记录
             Statics savedStatics = save(newStatics);
             LOG.debug("New Statics record added with ID: {}", savedStatics.getId());
         } else {
